@@ -3,6 +3,7 @@ from matplotlib.widgets import Slider
 import numpy as np
 from astropy.io import fits
 import os, sys
+import shutil
 
 import logging
 logging.basicConfig(filename = 'logs.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -84,6 +85,13 @@ hdul1.close()
 # Создание нового массива пикселей
 result = np.zeros_like(img1)
 
+# Определяем место для сохранения
+try:
+    os.mkdir('aligned')
+except:
+    shutil.rmtree('aligned')
+    os.mkdir('aligned')
+
 # Цикл для совмещения остальных файлов
 for i, file in enumerate(files[1:]):
     # Загрузка файла и нахождение координат отличительного признака
@@ -106,7 +114,7 @@ for i, file in enumerate(files[1:]):
     img2 = np.roll(img2, dy, axis=0)
 
     # Сохранение выровненного изображения
-    fits.writeto(file[:-4] + '_aligned.fits', img2, overwrite=True)
+    fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True)
     logging.info(f"Image {i+1}: {file} - saved")
 
 print('Finish program alignment of the solar disk')
