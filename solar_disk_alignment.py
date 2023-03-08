@@ -113,7 +113,7 @@ for i, file in enumerate(files[1:]):
     img2 = np.roll(img2, dx, axis=1)
     img2 = np.roll(img2, dy, axis=0)
 
-    # Сохранение выровненного изображения
+    # Сохранение выравненного изображения
     fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True)
     logging.info(f"Image {i+1}: {file} - saved")
 
