@@ -27,7 +27,7 @@ for i in range(0, len(files)):
     fig, ax = plt.subplots(figsize=(9, 9))
     im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]])
     fig.colorbar(im)
-    fig.tight_layout()
+    # fig.tight_layout()
     # origin='lower'- расположение начал координат – точки [0,0]
 
     # Создание слайдера для редактирования границ цветовой шкалы
