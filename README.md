@@ -1,4 +1,4 @@
-# SRH analise
+# SRH analysis
 
 ## solar_disk_alignment
 Cкрипт для выравнивания радиоизображений Солнца относительно друг друга
