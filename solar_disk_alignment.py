@@ -38,7 +38,7 @@ def find_max_around_point(matrix, point, size):
     max_row = row_indices[max_indices[0]]
     max_col = col_indices[max_indices[1]]
     
-    return (max_row, max_col)
+    return (max_row, max_col, max_value)
 
 coordinates_of_distinguishing_feature = []
 
@@ -96,7 +96,7 @@ for i in range(0, len(files)):
         logging.info(f"No double click coordinates recorded")
         sys.exit()
 
-def alignment_sun_disk(files = files, method = 'search_max_in_area'):
+def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None):
     # Загрузка первого файла и нахождение координат отличительного признака
     hdul1 = fits.open(f'{directory}/{files[0]}')
     img1 = hdul1[0].data  # данные первого изображения
@@ -106,12 +106,19 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area'):
 
             kp1 = (coordinates_of_distinguishing_feature[0][0], coordinates_of_distinguishing_feature[0][1])  # координаты признака на первом изображении
             if int(np.sqrt(data.size)) == 1024:
-                max_col, max_row = find_max_around_point(img1, reversed(kp1), 25)
+                max_row, max_col, max_value = find_max_around_point(img1, reversed(kp1), 25)
                 kp1 = (max_row, max_col)
+                logging.info(f"Max - {max_value} in {kp1}")
 
             elif int(np.sqrt(data.size)) == 512:
-                max_col, max_row = find_max_around_point(img1, reversed(kp1), 13)
+                max_row, max_col, max_value = find_max_around_point(img1, reversed(kp1), 13)
                 kp1 = (max_row, max_col)
+                logging.info(f"Max - {max_value} in {kp1}")
+
+            else:
+                max_row, max_col, max_value = find_max_around_point(img1, reversed(kp1), area)
+                kp1 = (max_row, max_col)
+                logging.info(f"Max - {max_value} in {kp1}")
 
         elif method == 'linear_image_shift':
             kp1 = (coordinates_of_distinguishing_feature[0][0], coordinates_of_distinguishing_feature[0][1])  # координаты признака на первом изображении
@@ -149,12 +156,14 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area'):
         if method == 'search_max_in_area':
 
             if int(np.sqrt(data.size)) == 1024:
-                max_col, max_row = find_max_around_point(img2, reversed(kp2), 25)
+                max_row, max_col, max_value = find_max_around_point(img2, reversed(kp2), 25)
                 kp2 = (max_row, max_col)
+                logging.info(f"Max - {max_value} in {kp2}")
 
             elif int(np.sqrt(data.size)) == 512:
-                max_col, max_row = find_max_around_point(img2, reversed(kp2), 13)
+                max_row, max_col, max_value = find_max_around_point(img2, reversed(kp2), 13)
                 kp2 = (max_row, max_col)
+                logging.info(f"Max - {max_value} in {kp2}")
 
             # Нахождение горизонтального и вертикального сдвигов между изображениями
             dx = kp1[0] - kp2[0]
