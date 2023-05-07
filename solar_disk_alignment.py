@@ -4,14 +4,13 @@ import numpy as np
 from astropy.io import fits
 import os, sys
 import shutil
-import tkinter as tk
 
 import logging
 logging.basicConfig(filename = 'logs.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 logging.info(f'Start program alignment of the solar disk')
 
 ##########
-directory = 'test_dataset_2'
+directory = 'test_dataset'
 ##########
 logging.info(f'Path to files: {directory}')
 
@@ -19,8 +18,27 @@ files = sorted(os.listdir(directory))
 logging.info(f'Find {len(files)} files')
 logging.info(f'List files: \n {files}')
 
-def find_max_around_point(matrix, point, size):
+# Функция для обработки событий клика мыши
+def onclick(event):
+    if event.dblclick:
+        # Очистка списка координат кликов
+        click_coords.clear()
+        # Добавление координат клика в список
+        click_coords.append((int(event.xdata), int(event.ydata)))
 
+# Обновление цветовой шкалы и изображения при изменении положения ползунка
+def update(val):
+    vmin = im.norm.vmin
+    vmax = slider.val
+    im.set_clim(vmin, vmax)
+    fig.canvas.draw_idle()
+
+def find_max_around_point(matrix : np.ndarray, point : tuple, size : int):
+    """     
+    The function searches for the maximum value in the matrix within a certain size around a given point. 
+    The input arguments of the function are the matrix `matrix` (two-dimensional array), the specified point `point` (coordinates) and the size of the search area `size` (integer).
+    The function returns a tuple of three values: the row `max_row` and column `max_col` of the maximum value, as well as the value `max_value` of the largest element in the specified area.
+    """
     # Get the indices of the smaller region around the point
     row, col = point
     half_size = size // 2
@@ -29,6 +47,12 @@ def find_max_around_point(matrix, point, size):
     
     # Get the smaller region from the original matrix
     smaller_matrix = matrix[np.ix_(row_indices, col_indices)]
+
+    # отладка
+    # plt.imshow((smaller_matrix), origin='lower', cmap='plasma', extent=[0, smaller_matrix.shape[1], 0, smaller_matrix.shape[0]])
+    # import random
+    # random_number = random.randint(0, 200)
+    # plt.savefig(f'1_{random_number}.png')
     
     # Find the maximum value in the smaller region
     max_value = np.max(smaller_matrix)
@@ -51,37 +75,19 @@ for i in range(0, len(files)):
     im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]])
     fig.colorbar(im)
     # fig.tight_layout()
-    # origin='lower'- расположение начал координат – точки [0,0]
 
     # Создание слайдера для редактирования границ цветовой шкалы
     ax_slider = plt.axes([0.25, 0.03, 0.5, 0.01], facecolor='lightgoldenrodyellow')
     slider = Slider(ax_slider, 'Threshold', im.norm.vmin, im.norm.vmax, valinit=im.norm.vmax/2)
-
-    # Обновление цветовой шкалы и изображения при изменении положения ползунка
-    def update(val):
-        vmin = im.norm.vmin
-        vmax = slider.val
-        im.set_clim(vmin, vmax)
-        fig.canvas.draw_idle()
-
     slider.on_changed(update)
 
     # Список для хранения координат кликов пользователя
     click_coords = []
 
-    # Функция для обработки событий клика мыши
-    def onclick(event):
-        if event.dblclick:
-            # Очистка списка координат кликов
-            click_coords.clear()
-            # Добавление координат клика в список
-            click_coords.append((int(event.xdata), int(event.ydata)))
-
     # Привязка обработчика событий клика мыши к графику
     cid = fig.canvas.mpl_connect('button_press_event', onclick)
 
-    # Отображение графика
-    # на полный экран
+    # Отображение графика на полный экран
     # mng = plt.get_current_fig_manager()
     # mng.full_screen_toggle()
     plt.show()
@@ -96,7 +102,7 @@ for i in range(0, len(files)):
         logging.info(f"No double click coordinates recorded")
         sys.exit()
 
-def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None):
+def alignment_sun_disk(files : list[str] = files, method : str = 'search_max_in_area', area : int = None):
     # Загрузка первого файла и нахождение координат отличительного признака
     hdul1 = fits.open(f'{directory}/{files[0]}')
     img1 = hdul1[0].data  # данные первого изображения
@@ -106,19 +112,18 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None
 
             kp1 = (coordinates_of_distinguishing_feature[0][0], coordinates_of_distinguishing_feature[0][1])  # координаты признака на первом изображении
             if int(np.sqrt(data.size)) == 1024:
-                max_row, max_col, max_value = find_max_around_point(img1, reversed(kp1), 25)
+                max_col, max_row, max_value = find_max_around_point(img1, reversed(kp1), 25)
                 kp1 = (max_row, max_col)
                 logging.info(f"Max - {max_value} in {kp1}")
 
             elif int(np.sqrt(data.size)) == 512:
-                max_row, max_col, max_value = find_max_around_point(img1, reversed(kp1), 13)
+                max_col, max_row, max_value = find_max_around_point(img1, reversed(kp1), 13)
                 kp1 = (max_row, max_col)
                 logging.info(f"Max - {max_value} in {kp1}")
-
-            else:
-                max_row, max_col, max_value = find_max_around_point(img1, reversed(kp1), area)
-                kp1 = (max_row, max_col)
-                logging.info(f"Max - {max_value} in {kp1}")
+            # else:
+            #     max_col, max_row, max_value = find_max_around_point(img1, reversed(kp1), area)
+            #     kp1 = (max_col, max_row)
+            #     logging.info(f"Max - {max_value} in {kp1}")
 
         elif method == 'linear_image_shift':
             kp1 = (coordinates_of_distinguishing_feature[0][0], coordinates_of_distinguishing_feature[0][1])  # координаты признака на первом изображении
@@ -129,9 +134,6 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None
 
     hdul1.close()
 
-    # Создание нового массива пикселей
-    result = np.zeros_like(img1)
-
     # Определяем место для сохранения
     try:
         os.mkdir('aligned')
@@ -139,29 +141,38 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None
         shutil.rmtree('aligned')
         os.mkdir('aligned')
 
+    # пересохранение первого файла в новую директорию
+    hdul2 = fits.open(f'{directory}/{files[0]}')
+    header = hdul2[0].header
+    img2 = hdul2[0].data
+    hdul2.close()
+    fits.writeto(f'aligned/{files[0][:-4]}_aligned.fits', img2, overwrite=True, header=header)
+    logging.info(f"Image {1}: {files[0]} - saved")
+
     # Цикл для совмещения остальных файлов
     for i, file in enumerate(files[1:]):
         # Загрузка файла и нахождение координат отличительного признака
-        hdul2 = fits.open(f'{directory}/{file}') 
+        hdul2 = fits.open(f'{directory}/{file}')
+        header = hdul2[0].header
         img2 = hdul2[0].data
+        hdul2.close()
 
         try:
             kp2 = (coordinates_of_distinguishing_feature[i+1][0], coordinates_of_distinguishing_feature[i+1][1])  # координаты признака на текущем изображени
+
         except:
             print('The program is terminated due to lack of alignment data')
             logging.info('The program is terminated due to lack of alignment data')
 
-        hdul2.close()
-
         if method == 'search_max_in_area':
 
             if int(np.sqrt(data.size)) == 1024:
-                max_row, max_col, max_value = find_max_around_point(img2, reversed(kp2), 25)
+                max_col, max_row, max_value = find_max_around_point(img2, reversed(kp2), 25)
                 kp2 = (max_row, max_col)
                 logging.info(f"Max - {max_value} in {kp2}")
 
             elif int(np.sqrt(data.size)) == 512:
-                max_row, max_col, max_value = find_max_around_point(img2, reversed(kp2), 13)
+                max_col, max_row, max_value = find_max_around_point(img2, reversed(kp2), 13)
                 kp2 = (max_row, max_col)
                 logging.info(f"Max - {max_value} in {kp2}")
 
@@ -174,8 +185,8 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None
             img2 = np.roll(img2, dy, axis=0)
 
             # Сохранение выравненного изображения
-            fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True)
-            logging.info(f"Image {i+1}: {file} - saved")          
+            fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+            logging.info(f"Image {i+2}: {file} - saved")          
 
         elif method == 'linear_image_shift':
             
@@ -188,8 +199,8 @@ def alignment_sun_disk(files = files, method = 'search_max_in_area', area = None
             img2 = np.roll(img2, dy, axis=0)
 
             # Сохранение выравненного изображения
-            fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True)
-            logging.info(f"Image {i+1}: {file} - saved")
+            fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+            logging.info(f"Image {i+2}: {file} - saved")
 
     print('Finish program alignment of the solar disk')
     print('For more details: read file "logs.log"')
