@@ -27,7 +27,7 @@ np.set_printoptions(threshold=np.inf)
 # fits_data = fits_image_file[0].data
 
 # получение границ кропа через срезы из строк и каждой строки
-stroka_1, stroka_2, stolbec_1, stolbec_2 = 310, 360, 105, 165
+# stroka_1, stroka_2, stolbec_1, stolbec_2 = 310, 360, 105, 165
 stroka_1, stroka_2, stolbec_1, stolbec_2 = 0, 1024, 0, 1024
     
 def multiple_crope_images_display(input_matrix_list_files, NX=4, NY=4):
@@ -44,8 +44,8 @@ def multiple_crope_images_display(input_matrix_list_files, NX=4, NY=4):
         # print(f'рисую в клетке {i+1}')
         # ax.imshow((fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2], origin='lower', cmap='plasma', interpolation='gaussian')
         ax.imshow((fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2], origin='lower', cmap='plasma', extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]])
-        circle = Circle((512, 512), 425, color='white', fill=False)
-        ax.add_artist(circle)
+        # circle = Circle((512, 512), 425, color='white', fill=False)
+        # ax.add_artist(circle)
         ax.set_title(f'Freq {freq}, {r_or_l.group()}' if r_or_l else f'Freq {freq}, Stoks {i_or_v.group()}')
         ax.axis('off') 
     
