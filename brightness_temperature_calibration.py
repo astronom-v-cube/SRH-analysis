@@ -95,10 +95,3 @@ for image in range(len(files)):
         print("No double click coordinates recorded")
         logging.info(f"No double click coordinates recorded")
         sys.exit()
-
-
-
-
-##############################################################
-if __name__ == '__main__':
-    pass
