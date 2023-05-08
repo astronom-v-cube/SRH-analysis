@@ -30,8 +30,6 @@ import os
 import casaDescDicts as desc
 from casatasks import tclean
 
-from xSrhEdikCASA import phaseEdit
-
 cdict = {'red': ((0.0, 0.0, 0.0),
                  (0.2, 0.0, 0.0),
                  (0.4, 0.2, 0.2),
@@ -248,10 +246,16 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.rcpCanvas.clear()
         if self.indexOfImageType == 0 or self.indexOfImageType == 4 or self.indexOfImageType == 5:
             if self.autoscaleButton.isChecked():
-                self.lcpCanvas.imshow(self.lcpData, NP.min(self.lcpData), NP.max(self.lcpData))
+                if self.lcp2rcp:
+                    self.lcpCanvas.imshow(self.rcpData, NP.min(self.rcpData), NP.max(self.rcpData))
+                else:
+                    self.lcpCanvas.imshow(self.lcpData, NP.min(self.lcpData), NP.max(self.lcpData))
                 self.rcpCanvas.imshow(self.rcpData, NP.min(self.rcpData), NP.max(self.rcpData))
             else:
-                self.lcpCanvas.imshow(self.lcpData*self.imageScale + self.imageOffset, self.vminLcp, self.vmaxLcp)
+                if self.lcp2rcp:
+                    self.lcpCanvas.imshow(self.rcpData*self.imageScale + self.imageOffset, self.vminRcp, self.vmaxRcp)
+                else:
+                    self.lcpCanvas.imshow(self.lcpData*self.imageScale + self.imageOffset, self.vminLcp, self.vmaxLcp)
                 self.rcpCanvas.imshow(self.rcpData*self.imageScale + self.imageOffset, self.vminRcp, self.vmaxRcp)
             if self.indexOfImageType == 4:
                 self.lcpCanvas.contour(self.psfData*self.imageScale + self.imageOffset, NP.max(self.psfData)*.5*self.imageScale + self.imageOffset)
@@ -334,6 +338,9 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.nLcpPhaseSlopeSpin.setValue(self.srhFits.nSlopeLcp[self.currentFrequencyChannel])
         self.ewRcpPhaseSlopeSpin.setValue(self.srhFits.ewSlopeRcp[self.currentFrequencyChannel])
         self.nRcpPhaseSlopeSpin.setValue(self.srhFits.nSlopeRcp[self.currentFrequencyChannel])
+        if (self.imageUpdate):
+            self.buildImage()
+            self.showImage()
 
     def onEastWestPhaseStairLcpChanged(self, value):
         self.ewPhaseCoefsLcp[self.currentFrequencyChannel, self.ewStairLength - 1] = value
@@ -1096,6 +1103,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.indexOfImageType = 0
         self.setCalibScanToCurrentScan = False
         self.useWeights = False
+        self.lcp2rcp = False
 
         self.lcpMaxTrace = []
         self.rcpMaxTrace = []
@@ -1174,25 +1182,25 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.calibScan.valueChanged.connect(self.onCalibScanChanged)
 
         self.ewLcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix = 'EW LCP Slope ')
-        self.ewLcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.ewLcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.ewLcpPhaseSlopeSpin.setSingleStep(0.1)
         self.ewLcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.ewLcpPhaseSlopeSpin.valueChanged.connect(self.onEastWestLcpPhaseSlopeChanged)
 
         self.ewRcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix='EW RCP Slope ')
-        self.ewRcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.ewRcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.ewRcpPhaseSlopeSpin.setSingleStep(0.1)
         self.ewRcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.ewRcpPhaseSlopeSpin.valueChanged.connect(self.onEastWestRcpPhaseSlopeChanged)
 
         self.nLcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix='S LCP Slope ')
-        self.nLcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.nLcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.nLcpPhaseSlopeSpin.setSingleStep(0.1)
         self.nLcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.nLcpPhaseSlopeSpin.valueChanged.connect(self.onNorthLcpPhaseSlopeChanged)
 
         self.nRcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix='S RCP Slope ')
-        self.nRcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.nRcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.nRcpPhaseSlopeSpin.setSingleStep(0.1)
         self.nRcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.nRcpPhaseSlopeSpin.valueChanged.connect(self.onNorthRcpPhaseSlopeChanged)
@@ -1204,6 +1212,11 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.sunContourButton.setCheckable(True)
         self.sunContourButton.setChecked(False)
         self.sunContourButton.clicked.connect(self.onSunContour)
+        
+        self.lcp2RcpButton = QtWidgets.QPushButton('LCP -> RCP', self)
+        self.lcp2RcpButton.setCheckable(True)
+        self.lcp2RcpButton.setChecked(False)
+        self.lcp2RcpButton.clicked.connect(self.onLcp2Rcp)
 
         self.phaseCorrectButton = QtWidgets.QPushButton('Phase', self)
         self.phaseCorrectButton.setCheckable(True)
@@ -1292,6 +1305,9 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         
         self.loadRLDifButton = QtWidgets.QPushButton('Load RLdif file...', self)
         self.loadRLDifButton.clicked.connect(self.onLoadRLDif)
+        
+        self.saveRLDifButton = QtWidgets.QPushButton('Save RLdif file...', self)
+        self.saveRLDifButton.clicked.connect(self.onSaveRLDif)
         
         # self.nonlinearButton = QtWidgets.QPushButton('Nonlinear', self)
         # self.nonlinearButton.setCheckable(True)
@@ -1502,7 +1518,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.srhTabs.addTab(self.tab6,"Save...")
         
         self.srhWidget = QtWidgets.QWidget()
-        self.srhWidget.layout = QGridLayout(self)
+        self.srhWidget.layout = QGridLayout()
         self.srhWidget.layout.setSpacing(1)
         self.srhWidget.layout.setVerticalSpacing(1)
         self.srhWidget.layout.addWidget(self.srhTabs,0,0, 1,-1)
@@ -1515,7 +1531,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.srhWidget.setLayout(self.srhWidget.layout)
         
         self.casaWidget= QtWidgets.QWidget()
-        self.casaWidget.layout = QGridLayout(self)
+        self.casaWidget.layout = QGridLayout()
         self.casaWidget.layout.setSpacing(1)
         self.casaWidget.layout.setVerticalSpacing(1)
         self.casaWidget.layout.addWidget(self.casaTabs)
@@ -1569,8 +1585,10 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         # self.tab2.layout.addWidget(self.fringeStoppingButton, 0, 7)
         self.tab2.layout.addWidget(self.loadGainsButton, 0, 3)
         self.tab2.layout.addWidget(self.saveGainsButton, 1, 3)
-        self.tab2.layout.addWidget(self.useRLDifButton, 0, 4)
+        self.tab2.layout.addWidget(self.saveRLDifButton, 0, 4)
         self.tab2.layout.addWidget(self.loadRLDifButton, 1, 4)
+        self.tab2.layout.addWidget(self.useRLDifButton, 0, 5)
+        
         
 #        self.tab2.layout.addWidget(self.ewAntenna, 0, 4)
 #        self.tab2.layout.addWidget(self.ewLcpAntennaPhase, 0, 5)
@@ -1604,6 +1622,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.tab4.layout.addWidget(self.nRcpPhaseSlopeSpin, 1, 1)
         self.tab4.layout.addWidget(self.centerDiskButton, 0, 2)
         self.tab4.layout.addWidget(self.sunContourButton, 1, 2)
+        self.tab4.layout.addWidget(self.lcp2RcpButton, 0, 3)
         self.tab4.setLayout(self.tab4.layout)
         
         self.tab5.layout = QGridLayout()
@@ -1619,7 +1638,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.tab6.layout.addWidget(self.saveButton, 0, 0)
         self.tab6.setLayout(self.tab6.layout)
         
-        self.casaGeneralButtons.layout = QGridLayout(self)
+        self.casaGeneralButtons.layout = QGridLayout()
         self.casaGeneralButtons.layout.setSpacing(1)
         self.casaGeneralButtons.layout.setVerticalSpacing(1)
         self.casaGeneralButtons.layout.addWidget(self.openMSButton, 0, 0)
@@ -1630,7 +1649,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.casaGeneralButtons.layout.addWidget(self.viewerButton, 1, 2)
         self.casaGeneralButtons.setLayout(self.casaGeneralButtons.layout)
         
-        self.tab7.layout = QGridLayout(self)
+        self.tab7.layout = QGridLayout()
         self.tab7.layout.setSpacing(1)
         self.tab7.layout.setVerticalSpacing(1)
         self.tab7.layout.addWidget(self.casaGeneralButtons,0,0)
@@ -1644,13 +1663,13 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.tab7.layout.addWidget(self.casaRightCanvas,4,1)
         self.tab7.setLayout(self.tab7.layout)
         
-        self.tab8.layout = QGridLayout(self)
+        self.tab8.layout = QGridLayout()
         self.tab8.layout.setSpacing(1)
         self.tab8.layout.setVerticalSpacing(1)
         self.tab8.layout.addWidget(self.cleanTable, 0, 0)
         self.tab8.setLayout(self.tab8.layout)
         
-        self.tab9.layout = QGridLayout(self)
+        self.tab9.layout = QGridLayout()
         self.tab9.layout.setSpacing(1)
         self.tab9.layout.setVerticalSpacing(1)
         self.tab9.layout.addWidget(self.makeGaincalButton, 0, 0)
@@ -1659,7 +1678,7 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.tab9.layout.addWidget(self.applycalTable, 1, 1)
         self.tab9.setLayout(self.tab9.layout)
         
-        self.tab10.layout = QGridLayout(self)
+        self.tab10.layout = QGridLayout()
         self.tab10.layout.setSpacing(1)
         self.tab10.layout.setVerticalSpacing(1)
         self.tab10.layout.addWidget(self.diskModelButton, 0, 0)
@@ -1967,6 +1986,9 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
             self.buildImage()
             self.showImage()
             
+    def onSaveRLDif(self):
+        self.srhFits.saveRLdif()
+        
     def onLoadRLDif(self):
         loadName, _ = QtWidgets.QFileDialog.getOpenFileNames(self)
         self.srhFits.loadRLdif(loadName[0])
@@ -1978,6 +2000,11 @@ class SrhEdik36(QtWidgets.QMainWindow):#MainWindow):
         self.srhFits.useRLDif = value
         if self.imageUpdate:
             self.buildImage()
+            self.showImage()
+            
+    def onLcp2Rcp(self, value):
+        self.lcp2rcp = value
+        if self.imageUpdate:
             self.showImage()
             
                                
@@ -1992,4 +2019,4 @@ if not application:
 phaseEdit36 = SrhEdik36();
 phaseEdit36.setWindowTitle('SRH editor')
 phaseEdit36.show();
-sys.exit(application.exec_());
+#sys.exit(application.exec_());

@@ -30,8 +30,6 @@ import os
 import casaDescDicts as desc
 from casatasks import tclean
 
-from xSrhEdikCASA import phaseEdit
-
 cdict = {'red': ((0.0, 0.0, 0.0),
                  (0.2, 0.0, 0.0),
                  (0.4, 0.2, 0.2),
@@ -351,6 +349,8 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
  
     def onCenterDisk(self):
         self.srhFits.centerDisk()
+        self.buildImage()
+        self.showImage()
         self.ewLcpPhaseSlopeSpin.setValue(self.srhFits.ewSlopeLcp[self.currentFrequencyChannel])
         self.sLcpPhaseSlopeSpin.setValue(self.srhFits.sSlopeLcp[self.currentFrequencyChannel])
         self.ewRcpPhaseSlopeSpin.setValue(self.srhFits.ewSlopeRcp[self.currentFrequencyChannel])
@@ -428,7 +428,6 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
             self.showImage()
             
     def onCalculatePhaseCurrent(self):
-        self.srhFits.baselines = 5
         self.srhFits.updateAntennaPhase(self.srhFits.frequencyChannel, baselinesNumber = self.srhFits.baselines)
         if (self.imageUpdate):
             self.buildImage()
@@ -1213,25 +1212,25 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.calibScan.valueChanged.connect(self.onCalibScanChanged)
 
         self.ewLcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix = 'EW LCP Slope ')
-        self.ewLcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.ewLcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.ewLcpPhaseSlopeSpin.setSingleStep(0.1)
         self.ewLcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.ewLcpPhaseSlopeSpin.valueChanged.connect(self.onEastWestLcpPhaseSlopeChanged)
 
         self.ewRcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix='EW RCP Slope ')
-        self.ewRcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.ewRcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.ewRcpPhaseSlopeSpin.setSingleStep(0.1)
         self.ewRcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.ewRcpPhaseSlopeSpin.valueChanged.connect(self.onEastWestRcpPhaseSlopeChanged)
 
         self.sLcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix='S LCP Slope ')
-        self.sLcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.sLcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.sLcpPhaseSlopeSpin.setSingleStep(0.1)
         self.sLcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.sLcpPhaseSlopeSpin.valueChanged.connect(self.onSouthLcpPhaseSlopeChanged)
 
         self.sRcpPhaseSlopeSpin = QtWidgets.QDoubleSpinBox(self, prefix='S RCP Slope ')
-        self.sRcpPhaseSlopeSpin.setRange(-180.,180.)
+        self.sRcpPhaseSlopeSpin.setRange(-1800.,1800.)
         self.sRcpPhaseSlopeSpin.setSingleStep(0.1)
         self.sRcpPhaseSlopeSpin.setStyle(CustomStyle())
         self.sRcpPhaseSlopeSpin.valueChanged.connect(self.onSouthRcpPhaseSlopeChanged)
@@ -1306,7 +1305,7 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.typeOfPlot.addItem('Image mean')
         
         self.binsSpin = QtWidgets.QSpinBox (self, prefix = 'bins ')
-        self.binsSpin.setRange(0.,10000.)
+        self.binsSpin.setRange(0,10000)
         self.binsSpin.valueChanged.connect(self.onBinsChanged)
         self.binsSpin.setValue(self.bins)
         self.binsSpin.setStyle(CustomStyle())
@@ -1560,7 +1559,7 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.srhTabs.addTab(self.tab7,"Save...")
         
         self.srhWidget = QtWidgets.QWidget()
-        self.srhWidget.layout = QGridLayout(self)
+        self.srhWidget.layout = QGridLayout()
         self.srhWidget.layout.setSpacing(1)
         self.srhWidget.layout.setVerticalSpacing(1)
         self.srhWidget.layout.addWidget(self.srhTabs,0,0, 1,-1)
@@ -1573,7 +1572,7 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.srhWidget.setLayout(self.srhWidget.layout)
         
         self.casaWidget= QtWidgets.QWidget()
-        self.casaWidget.layout = QGridLayout(self)
+        self.casaWidget.layout = QGridLayout()
         self.casaWidget.layout.setSpacing(1)
         self.casaWidget.layout.setVerticalSpacing(1)
         self.casaWidget.layout.addWidget(self.casaTabs)
@@ -1686,7 +1685,7 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.tab7.layout.addWidget(self.saveButton, 0, 0)
         self.tab7.setLayout(self.tab7.layout)
         
-        self.casaGeneralButtons.layout = QGridLayout(self)
+        self.casaGeneralButtons.layout = QGridLayout()
         self.casaGeneralButtons.layout.setSpacing(1)
         self.casaGeneralButtons.layout.setVerticalSpacing(1)
         self.casaGeneralButtons.layout.addWidget(self.openMSButton, 0, 0)
@@ -1697,7 +1696,7 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.casaGeneralButtons.layout.addWidget(self.viewerButton, 1, 2)
         self.casaGeneralButtons.setLayout(self.casaGeneralButtons.layout)
         
-        self.tab8.layout = QGridLayout(self)
+        self.tab8.layout = QGridLayout()
         self.tab8.layout.setSpacing(1)
         self.tab8.layout.setVerticalSpacing(1)
         self.tab8.layout.addWidget(self.casaGeneralButtons,0,0)
@@ -1711,13 +1710,13 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.tab8.layout.addWidget(self.casaRightCanvas,4,1)
         self.tab8.setLayout(self.tab8.layout)
         
-        self.tab9.layout = QGridLayout(self)
+        self.tab9.layout = QGridLayout()
         self.tab9.layout.setSpacing(1)
         self.tab9.layout.setVerticalSpacing(1)
         self.tab9.layout.addWidget(self.cleanTable, 0, 0)
         self.tab9.setLayout(self.tab9.layout)
         
-        self.tab10.layout = QGridLayout(self)
+        self.tab10.layout = QGridLayout()
         self.tab10.layout.setSpacing(1)
         self.tab10.layout.setVerticalSpacing(1)
         self.tab10.layout.addWidget(self.makeGaincalButton, 0, 0)
@@ -1726,7 +1725,7 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
         self.tab10.layout.addWidget(self.applycalTable, 1, 1)
         self.tab10.setLayout(self.tab10.layout)
         
-        self.tab11.layout = QGridLayout(self)
+        self.tab11.layout = QGridLayout()
         self.tab11.layout.setSpacing(1)
         self.tab11.layout.setVerticalSpacing(1)
         self.tab11.layout.addWidget(self.diskModelButton, 0, 0)
@@ -1907,8 +1906,8 @@ class SrhEdik612(QtWidgets.QMainWindow):#MainWindow):
     
             pHeader = fits.Header();
             t = self.srhFits.hduList[0].header['DATE-OBS']
-            pHeader['DATE-OBS']     = self.srhFits.hduList[0].header['DATE-OBS'] + 'T' + phaseEdit.timeList.itemText(scan)
-            pHeader['T-OBS']     = self.srhFits.hduList[0].header['DATE-OBS'] + 'T' + phaseEdit.timeList.itemText(scan)#self.srhFits.hduList[0].header['TIME-OBS']
+            pHeader['DATE-OBS']     = self.srhFits.hduList[0].header['DATE-OBS'] + 'T' + self.timeList.itemText(scan)
+            pHeader['T-OBS']     = self.srhFits.hduList[0].header['DATE-OBS'] + 'T' + self.timeList.itemText(scan)#self.srhFits.hduList[0].header['TIME-OBS']
             pHeader['INSTRUME']     = self.srhFits.hduList[0].header['INSTRUME']
             pHeader['ORIGIN']       = self.srhFits.hduList[0].header['ORIGIN']
             pHeader['OBS-LAT']      = self.srhFits.hduList[0].header['OBS-LAT']
@@ -2002,4 +2001,4 @@ if not application:
 phaseEdit612 = SrhEdik612();
 phaseEdit612.setWindowTitle('SRH editor')
 phaseEdit612.show();
-sys.exit(application.exec_());
+# sys.exit(application.exec_());
