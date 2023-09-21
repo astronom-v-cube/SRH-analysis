@@ -1,7 +1,9 @@
 import ftplib
+import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
-import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 date = '16.07.2023'
@@ -27,12 +29,12 @@ ftp.cwd(f'SRH/corrPlot/{date_spl[2]}/{date_spl[1]}')
 for filename in filenames:
     with open(filename, 'wb' ) as file:
         ftp.retrbinary('RETR %s' % filename, file.write)
-        file.close()
 
-def format_seconds(x):
+def format_seconds(x, pos):
     hours = int(x // 3600)
     minutes = int((x % 3600) // 60)
-    return f"{hours:02d}:{minutes:02d}"
+    seconds = int(x % 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 fig0306, ((ax1, ax2)) = plt.subplots(2, 1, sharex=True)
 fig0612, ((ax3, ax4)) = plt.subplots(2, 1, sharex=True)
@@ -47,20 +49,23 @@ hdul0306 = fits.open(fits_file_0306)
 hdul0612 = fits.open(fits_file_0612)
 hdul1224 = fits.open(fits_file_1224)
 
-freqs = np.array(hdul0306[1].data, dtype='float') / 1e6
+freqs = np.array(hdul0306[1].data.copy(), dtype='float') / 1e6
 
-time0306 = np.array(hdul0306[2].data[0][0])
-data_0306 = hdul0306[2].data
+time0306 = np.array(hdul0306[2].data.copy()[0][0])
+data_0306 = hdul0306[2].data.copy()
 
-time0612 = np.array(hdul0612[2].data[0][0])
-data_0612 = hdul0612[2].data
+time0612 = np.array(hdul0612[2].data.copy()[0][0])
+data_0612 = hdul0612[2].data.copy()
 
-time1224 = np.array(hdul1224[2].data[0][0])
-data_1224 = hdul1224[2].data
+time1224 = np.array(hdul1224[2].data.copy()[0][0])
+data_1224 = hdul1224[2].data.copy()
 
 hdul0306.close()
 hdul0612.close()
 hdul1224.close()
+
+for file in filenames:
+    os.unlink(file)
 
 colors = plt.cm.jet(np.linspace(0, 1, 16))
 
