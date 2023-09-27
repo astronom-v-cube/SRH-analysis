@@ -6,7 +6,7 @@ import numpy as np
 from astropy.io import fits
 from matplotlib.ticker import FuncFormatter
 
-date = '16.07.2023'
+date = '30.07.2023'
 
 SMALL_SIZE = 10
 MEDIUM_SIZE = 16
@@ -27,8 +27,12 @@ ftp = ftplib.FTP('ftp.rao.istp.ac.ru', 'anonymous', 'anonymous')
 ftp.cwd(f'SRH/corrPlot/{date_spl[2]}/{date_spl[1]}')
 
 for filename in filenames:
-    with open(filename, 'wb' ) as file:
-        ftp.retrbinary('RETR %s' % filename, file.write)
+    with open(filename, 'wb') as file:
+        try:
+            ftp.retrbinary('RETR %s' % filename, file.write)
+        except:
+            print(f'Файл {filename} не найден на сервере')
+            continue
 
 def format_seconds(x, pos):
     hours = int(x // 3600)
@@ -43,27 +47,38 @@ fig0306.suptitle(f'Диапазон 3 - 6 ГГц, {date}')
 fig0612.suptitle(f'Диапазон 6 - 12 ГГц, {date}')
 fig1224.suptitle(f'Диапазон 12 - 24 ГГц, {date}')
 
+""" index = 0
+
+while index < len(filenames):
+    filename = filenames[index]
+    if os.path.isfile(filename):
+        index += 1
+    else:
+        filenames.pop(index) """
+
 fits_file_0306, fits_file_0612, fits_file_1224 = filenames[0], filenames[1], filenames[2]
 
-hdul0306 = fits.open(fits_file_0306)
-hdul0612 = fits.open(fits_file_0612)
-hdul1224 = fits.open(fits_file_1224)
+try:
+    hdul0306 = fits.open(fits_file_0306)
+    hdul0612 = fits.open(fits_file_0612)
+    hdul1224 = fits.open(fits_file_1224)
 
-freqs = np.array(hdul0306[1].data.copy(), dtype='float') / 1e6
+    freqs = np.array(hdul0306[1].data.copy(), dtype='float') / 1e6
 
-time0306 = np.array(hdul0306[2].data.copy()[0][0])
-data_0306 = hdul0306[2].data.copy()
+    time0306 = np.array(hdul0306[2].data.copy()[0][0])
+    data_0306 = hdul0306[2].data.copy()
 
-time0612 = np.array(hdul0612[2].data.copy()[0][0])
-data_0612 = hdul0612[2].data.copy()
+    time0612 = np.array(hdul0612[2].data.copy()[0][0])
+    data_0612 = hdul0612[2].data.copy()
 
-time1224 = np.array(hdul1224[2].data.copy()[0][0])
-data_1224 = hdul1224[2].data.copy()
+    time1224 = np.array(hdul1224[2].data.copy()[0][0])
+    data_1224 = hdul1224[2].data.copy()
 
-hdul0306.close()
-hdul0612.close()
-hdul1224.close()
-
+    hdul0306.close()
+    hdul0612.close()
+    hdul1224.close()
+except:
+    print('Один из файлов не найден')
 for file in filenames:
     os.unlink(file)
 
