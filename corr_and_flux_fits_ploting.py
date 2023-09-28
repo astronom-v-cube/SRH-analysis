@@ -6,6 +6,10 @@ import numpy as np
 from astropy.io import fits
 from matplotlib.ticker import FuncFormatter
 
+download_and_delete_fits = True
+replace_zero_average = True
+custom_time_line = True
+
 date = '30.07.2023'
 
 SMALL_SIZE = 10
@@ -23,22 +27,44 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 date_spl = date.split('.')
 filenames = [f'srh_0306_cp_{date_spl[2]}{date_spl[1]}{date_spl[0]}.fits', f'srh_0612_cp_{date_spl[2]}{date_spl[1]}{date_spl[0]}.fits', f'srh_1224_cp_{date_spl[2]}{date_spl[1]}{date_spl[0]}.fits']
 
-ftp = ftplib.FTP('ftp.rao.istp.ac.ru', 'anonymous', 'anonymous')
-ftp.cwd(f'SRH/corrPlot/{date_spl[2]}/{date_spl[1]}')
+if download_and_delete_fits:
 
-for filename in filenames:
-    with open(filename, 'wb') as file:
-        try:
-            ftp.retrbinary('RETR %s' % filename, file.write)
-        except:
-            print(f'Файл {filename} не найден на сервере')
-            continue
+    ftp = ftplib.FTP('ftp.rao.istp.ac.ru', 'anonymous', 'anonymous')
+    ftp.cwd(f'SRH/corrPlot/{date_spl[2]}/{date_spl[1]}')
+
+    for filename in filenames:
+        with open(filename, 'wb') as file:
+            try:
+                ftp.retrbinary('RETR %s' % filename, file.write)
+            except:
+                print(f'Файл {filename} не найден на сервере')
+                continue
 
 def format_seconds(x, pos):
     hours = int(x // 3600)
     minutes = int((x % 3600) // 60)
     seconds = int(x % 60)
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+def replace_zero_average(array_time, array_data):
+    if replace_zero_average:
+        for i in range(1, len(array_time) - 1):
+
+            if array_time[i] == 0:
+
+                average_time = (array_time[i - 1] + array_time[i + 1]) / 2.0
+                array_time[i] = average_time
+
+                for z in range(3):
+                    average_data = (array_data[z][i - 1] + array_data[z][i + 1]) / 2.0
+                    array_data[z][i] = average_data
+
+def make_time_line(array):
+            start = array[0]
+            step = 3.52
+            count = array.shape[0]
+            time_line = np.arange(start, start + step * count, step)
+            return time_line
 
 fig0306, ((ax1, ax2)) = plt.subplots(2, 1, sharex=True)
 fig0612, ((ax3, ax4)) = plt.subplots(2, 1, sharex=True)
@@ -64,45 +90,78 @@ try:
     hdul1224 = fits.open(fits_file_1224)
 
     freqs = np.array(hdul0306[1].data.copy(), dtype='float') / 1e6
-
-    time0306 = np.array(hdul0306[2].data.copy()[0][0])
     data_0306 = hdul0306[2].data.copy()
-
-    time0612 = np.array(hdul0612[2].data.copy()[0][0])
     data_0612 = hdul0612[2].data.copy()
-
-    time1224 = np.array(hdul1224[2].data.copy()[0][0])
     data_1224 = hdul1224[2].data.copy()
 
     hdul0306.close()
     hdul0612.close()
     hdul1224.close()
+
 except:
-    print('Один из файлов не найден')
-for file in filenames:
-    os.unlink(file)
+    print('Один из файлов не найден, или возникла какая-то ошибка')
+
+if download_and_delete_fits:
+    for file in filenames:
+        os.unlink(file)
 
 colors = plt.cm.jet(np.linspace(0, 1, 16))
 
 for freq in range(0, 16):
 
-    ax1.plot(time0306, data_0306[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
-    ax1.plot(time0306, data_0306[freq][2], color=colors[freq])
+    if custom_time_line == False:
+
+        replace_zero_average(data_0306[freq][0], data_0306[freq])
+        ax1.plot(data_0306[freq][0], data_0306[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax1.plot(data_0306[freq][0], data_0306[freq][2], color=colors[freq])
+        
+        ax2.plot(data_0306[freq][0], data_0306[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax2.plot(data_0306[freq][0], data_0306[freq][4], color=colors[freq])
+
+
+        replace_zero_average(data_0612[freq][0], data_0612[freq])
+        ax3.plot(data_0612[freq][0], data_0612[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax3.plot(data_0612[freq][0], data_0612[freq][2], color=colors[freq])
+
+        ax4.plot(data_0612[freq][0], data_0612[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax4.plot(data_0612[freq][0], data_0612[freq][4], color=colors[freq])
+
+
+        replace_zero_average(data_1224[freq][0], data_1224[freq])
+        ax5.plot(data_1224[freq][0], data_1224[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax5.plot(data_1224[freq][0], data_1224[freq][2], color=colors[freq])
+
+        ax6.plot(data_1224[freq][0], data_1224[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax6.plot(data_1224[freq][0], data_1224[freq][4], color=colors[freq])
+
+    else:
+
+        time_line = make_time_line(data_0306[freq][0])
     
-    ax2.plot(time0306, data_0306[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
-    ax2.plot(time0306, data_0306[freq][4], color=colors[freq])
+        ax1.plot(time_line, data_0306[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax1.plot(time_line, data_0306[freq][2], color=colors[freq])
+        
+        ax2.plot(time_line, data_0306[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax2.plot(time_line, data_0306[freq][4], color=colors[freq])
 
-    ax3.plot(time0612, data_0612[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
-    ax3.plot(time0612, data_0612[freq][2], color=colors[freq])
 
-    ax4.plot(time0612, data_0612[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
-    ax4.plot(time0612, data_0612[freq][4], color=colors[freq])
+        time_line = make_time_line(data_0612[freq][0])
+        
+        ax3.plot(time_line, data_0612[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax3.plot(time_line, data_0612[freq][2], color=colors[freq])
 
-    ax5.plot(time1224, data_1224[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
-    ax5.plot(time1224, data_1224[freq][2], color=colors[freq])
+        ax4.plot(time_line, data_0612[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax4.plot(time_line, data_0612[freq][4], color=colors[freq])
 
-    ax6.plot(time1224, data_1224[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
-    ax6.plot(time1224, data_1224[freq][4], color=colors[freq])
+
+        time_line = make_time_line(data_1224[freq][0])
+        
+        ax5.plot(time_line, data_1224[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax5.plot(time_line, data_1224[freq][2], color=colors[freq])
+
+        ax6.plot(time_line, data_1224[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax6.plot(time_line, data_1224[freq][4], color=colors[freq])
+
 
 for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
