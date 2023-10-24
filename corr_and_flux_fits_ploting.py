@@ -8,9 +8,9 @@ from matplotlib.ticker import FuncFormatter
 
 download_and_delete_fits = True
 replace_zero_average = True
-custom_time_line = True
+custom_time_line = False
 
-date = '30.07.2023'
+date = '07.07.2023'
 
 SMALL_SIZE = 10
 MEDIUM_SIZE = 16
