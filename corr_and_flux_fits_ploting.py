@@ -6,6 +6,9 @@ import numpy as np
 from astropy.io import fits
 from matplotlib.ticker import FuncFormatter
 
+# отображение всех значений матрицы в консоль
+np.set_printoptions(threshold=np.inf)
+
 download_and_delete_fits = True
 replace_zero_average = True
 custom_time_line = False
@@ -48,9 +51,9 @@ def format_seconds(x, pos):
 
 def replace_zero_average(array_time, array_data):
     if replace_zero_average:
-        for i in range(1, len(array_time) - 1):
+        for i in range(2, len(array_time) - 1):
 
-            if array_time[i] == 0:
+            if array_time[i] == 0 or array_time[i] < array_time[i-1]:
 
                 average_time = (array_time[i - 1] + array_time[i + 1]) / 2.0
                 array_time[i] = average_time
@@ -59,12 +62,11 @@ def replace_zero_average(array_time, array_data):
                     average_data = (array_data[z][i - 1] + array_data[z][i + 1]) / 2.0
                     array_data[z][i] = average_data
 
-def make_time_line(array):
-            start = array[0]
-            step = 3.52
-            count = array.shape[0]
-            time_line = np.arange(start, start + step * count, step)
-            return time_line
+def clear_time_line(array_time):
+    for i in range(0, len(array_time) - 1):
+        if array_time[i] < array_time[i-1]:
+            array_time[i] = None
+    return array_time
 
 fig0306, ((ax1, ax2)) = plt.subplots(2, 1, sharex=True)
 fig0612, ((ax3, ax4)) = plt.subplots(2, 1, sharex=True)
@@ -89,7 +91,9 @@ try:
     hdul0612 = fits.open(fits_file_0612)
     hdul1224 = fits.open(fits_file_1224)
 
-    freqs = np.array(hdul0306[1].data.copy(), dtype='float') / 1e6
+    freqs_0306 = np.array(hdul0306[1].data.copy(), dtype='float') / 1e6
+    freqs_0612 = np.array(hdul0612[1].data.copy(), dtype='float') / 1e6
+    freqs_1224 = np.array(hdul1224[1].data.copy(), dtype='float') / 1e6
     data_0306 = hdul0306[2].data.copy()
     data_0612 = hdul0612[2].data.copy()
     data_1224 = hdul1224[2].data.copy()
@@ -112,54 +116,47 @@ for freq in range(0, 16):
     if custom_time_line == False:
 
         replace_zero_average(data_0306[freq][0], data_0306[freq])
-        ax1.plot(data_0306[freq][0], data_0306[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax1.plot(data_0306[freq][0], data_0306[freq][1], label=f'{freqs_0306[freq]} GHz', color=colors[freq])
         ax1.plot(data_0306[freq][0], data_0306[freq][2], color=colors[freq])
-        
-        ax2.plot(data_0306[freq][0], data_0306[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax2.plot(data_0306[freq][0], data_0306[freq][3], label=f'{freqs_0306[freq]} GHz', color=colors[freq])
         ax2.plot(data_0306[freq][0], data_0306[freq][4], color=colors[freq])
 
-
         replace_zero_average(data_0612[freq][0], data_0612[freq])
-        ax3.plot(data_0612[freq][0], data_0612[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax3.plot(data_0612[freq][0], data_0612[freq][1], label=f'{freqs_0612[freq]} GHz', color=colors[freq])
         ax3.plot(data_0612[freq][0], data_0612[freq][2], color=colors[freq])
-
-        ax4.plot(data_0612[freq][0], data_0612[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax4.plot(data_0612[freq][0], data_0612[freq][3], label=f'{freqs_0612[freq]} GHz', color=colors[freq])
         ax4.plot(data_0612[freq][0], data_0612[freq][4], color=colors[freq])
 
-
         replace_zero_average(data_1224[freq][0], data_1224[freq])
-        ax5.plot(data_1224[freq][0], data_1224[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax5.plot(data_1224[freq][0], data_1224[freq][1], label=f'{freqs_1224[freq]} GHz', color=colors[freq])
         ax5.plot(data_1224[freq][0], data_1224[freq][2], color=colors[freq])
-
-        ax6.plot(data_1224[freq][0], data_1224[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax6.plot(data_1224[freq][0], data_1224[freq][3], label=f'{freqs_1224[freq]} GHz', color=colors[freq])
         ax6.plot(data_1224[freq][0], data_1224[freq][4], color=colors[freq])
 
     else:
 
-        time_line = make_time_line(data_0306[freq][0])
+        time_line = clear_time_line(data_0306[freq][0])
     
-        ax1.plot(time_line, data_0306[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax1.plot(time_line, data_0306[freq][1], label=f'{freqs_0306[freq]} GHz', color=colors[freq])
         ax1.plot(time_line, data_0306[freq][2], color=colors[freq])
-        
-        ax2.plot(time_line, data_0306[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax2.plot(time_line, data_0306[freq][3], label=f'{freqs_0306[freq]} GHz', color=colors[freq])
         ax2.plot(time_line, data_0306[freq][4], color=colors[freq])
 
-
-        time_line = make_time_line(data_0612[freq][0])
+        print(data_0612[freq][0])
+        time_line = clear_time_line(data_0612[freq][0])
+        print(time_line)
         
-        ax3.plot(time_line, data_0612[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax3.plot(time_line, data_0612[freq][1], label=f'{freqs_0612[freq]} GHz', color=colors[freq])
         ax3.plot(time_line, data_0612[freq][2], color=colors[freq])
-
-        ax4.plot(time_line, data_0612[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax4.plot(time_line, data_0612[freq][3], label=f'{freqs_0612[freq]} GHz', color=colors[freq])
         ax4.plot(time_line, data_0612[freq][4], color=colors[freq])
 
 
-        time_line = make_time_line(data_1224[freq][0])
+        time_line = clear_time_line(data_1224[freq][0])
         
-        ax5.plot(time_line, data_1224[freq][1], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax5.plot(time_line, data_1224[freq][1], label=f'{freqs_1224[freq]} GHz', color=colors[freq])
         ax5.plot(time_line, data_1224[freq][2], color=colors[freq])
-
-        ax6.plot(time_line, data_1224[freq][3], label=f'{freqs[freq]} GHz', color=colors[freq])
+        ax6.plot(time_line, data_1224[freq][3], label=f'{freqs_1224[freq]} GHz', color=colors[freq])
         ax6.plot(time_line, data_1224[freq][4], color=colors[freq])
 
 
