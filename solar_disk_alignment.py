@@ -1,20 +1,39 @@
+from matplotlib.colors import TwoSlopeNorm
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+import mplcursors
+import matplotlib.colors as colors
 import numpy as np
 from astropy.io import fits
-import os, sys
+import os, sys, re
 import shutil
-
 import logging
+
+def logprint(msg):
+    print(msg)
+    logging.info(msg)
+    
 logging.basicConfig(filename = 'logs.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 logging.info(f'Start program alignment of the solar disk')
+# norm=TwoSlopeNorm(vmin=0, vcenter=vcenter)
 
 ##########
-directory = 'test_dataset'
+directory = '612\\clean\\060400'
+flag = 'IV'
+flag = 'RL'
+vcenter = 350000
 ##########
 logging.info(f'Path to files: {directory}')
 
-files = sorted(os.listdir(directory))
+pattern = re.compile(r'(?<=[_.])\d{4,5}(?=[_.])')
+
+# функция для извлечения цифр из названия файла
+def extract_number(filename):
+    match = pattern.search(filename)
+    return int(match.group())
+
+files = sorted(os.listdir(directory), key=extract_number)
+
 logging.info(f'Find {len(files)} files')
 logging.info(f'List files: \n {files}')
 
@@ -25,6 +44,7 @@ def onclick(event):
         click_coords.clear()
         # Добавление координат клика в список
         click_coords.append((int(event.xdata), int(event.ydata)))
+        plt.close()
 
 # Обновление цветовой шкалы и изображения при изменении положения ползунка
 def update(val):
@@ -64,17 +84,57 @@ def find_max_around_point(matrix : np.ndarray, point : tuple, size : int):
     
     return (max_row, max_col, max_value)
 
-coordinates_of_distinguishing_feature = []
+coordinates_of_control_point = []
+coordinates_of_max_point_in_area = []
 
-for i in range(0, len(files)):
-    # Считывание файлов
-    data = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
+if flag == 'RL':
+    iterable = range(0, len(files)) 
+elif flag == 'IV':
+    iterable = range(0, len(files), 2)
 
-    # Создание графика и отображение данных
-    fig, ax = plt.subplots(figsize=(9, 9))
-    im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]])
-    fig.colorbar(im)
-    # fig.tight_layout()
+for i in iterable:
+
+    if flag == 'RL':
+        data = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
+        # Создание графика и отображение данных
+        fig, ax = plt.subplots(figsize=(9, 9))
+        im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]], norm=TwoSlopeNorm(vmin=0, vcenter=vcenter))
+        # mplcursors.cursor(hover=True)
+        plt.title(f'{files[i]}')
+        # fig.colorbar(im)
+        # fig.tight_layout()
+
+    elif flag == 'IV':
+        # Считывание файлов
+        data1 = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
+        data2 = fits.open(f'{directory}/{files[i+1]}', ignore_missing_simple=True)[0].data
+
+        # Создание регулярного выражения
+        pattern = re.compile(r'(RCP|LCP|R|L)')
+        # поиск совпадений в названии первого файла
+        match1 = pattern.search(files[i])
+        if match1.group() == 'RCP':
+            RCP = data1
+        elif match1.group() == 'LCP':
+            LCP = data1
+
+        # поиск совпадений в названии второго файла
+        match2 = pattern.search(files[i+1])
+        if match2.group() == 'RCP':
+            RCP = data2
+        elif match2.group() == 'LCP':
+            LCP = data2
+
+        I = RCP+LCP
+        V = RCP-LCP
+
+        # Создание графика и отображение данных
+        fig, ax = plt.subplots(figsize=(9, 9))
+        im = ax.imshow(-V, origin='lower', cmap='plasma', extent=[0, V.shape[1], 0, V.shape[0]], norm=colors.Normalize(vmin=0, vmax=350000))
+        # mplcursors.cursor(hover=True)
+        plt.title(f'{files[i]}')
+        # fig.colorbar(im)
+        # fig.tight_layout()
 
     # Создание слайдера для редактирования границ цветовой шкалы
     ax_slider = plt.axes([0.25, 0.03, 0.5, 0.01], facecolor='lightgoldenrodyellow')
@@ -88,15 +148,21 @@ for i in range(0, len(files)):
     cid = fig.canvas.mpl_connect('button_press_event', onclick)
 
     # Отображение графика на полный экран
-    # mng = plt.get_current_fig_manager()
-    # mng.full_screen_toggle()
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
     plt.show()
 
     # Вывод последней координаты двойного клика пользователя
     if len(click_coords) > 0:
         print(f"For image {i+1} last double click coordinates: {str(click_coords[-1])}")
         logging.info(f"For image {i+1} last double click coordinates: {str(click_coords[-1])}")
-        coordinates_of_distinguishing_feature.append(click_coords[-1])
+        if flag == 'RL':
+            coordinates_of_control_point.append(click_coords[-1])
+            plt.close()
+
+        elif flag == 'IV':
+            coordinates_of_control_point.append(click_coords[-1])
+            coordinates_of_control_point.append(click_coords[-1])
     else:
         print("No double click coordinates recorded")
         logging.info(f"No double click coordinates recorded")
@@ -110,43 +176,43 @@ def alignment_sun_disk(files : list[str] = files, method : str = 'search_max_in_
     try:
         if method == 'search_max_in_area':
 
-            kp1 = (coordinates_of_distinguishing_feature[0][0], coordinates_of_distinguishing_feature[0][1])  # координаты признака на первом изображении
-            if int(np.sqrt(data.size)) == 1024:
-                max_col, max_row, max_value = find_max_around_point(img1, reversed(kp1), 25)
-                kp1 = (max_row, max_col)
-                logging.info(f"Max - {max_value} in {kp1}")
+            control_point_1 = (coordinates_of_control_point[0][0], coordinates_of_control_point[0][1])  # координаты признака на первом изображении
+            if int(np.sqrt(img1.size)) == 1024:
+                max_col, max_row, max_value = find_max_around_point(img1, reversed(control_point_1), 15)
 
-            elif int(np.sqrt(data.size)) == 512:
-                max_col, max_row, max_value = find_max_around_point(img1, reversed(kp1), 13)
-                kp1 = (max_row, max_col)
-                logging.info(f"Max - {max_value} in {kp1}")
+            elif int(np.sqrt(img1.size)) == 512:
+                max_col, max_row, max_value = find_max_around_point(img1, reversed(control_point_1), 13)
+                
+            control_point_1 = (max_row, max_col)
+            coordinates_of_max_point_in_area.append(control_point_1)
+            logging.info(f"Max - {max_value} in {control_point_1}")
+                
             # else:
-            #     max_col, max_row, max_value = find_max_around_point(img1, reversed(kp1), area)
-            #     kp1 = (max_col, max_row)
-            #     logging.info(f"Max - {max_value} in {kp1}")
+            #     max_col, max_row, max_value = find_max_around_point(img1, reversed(control_point_1), area)
+            #     control_point_1 = (max_col, max_row)
+            #     logging.info(f"Max - {max_value} in {control_point_1}")
 
         elif method == 'linear_image_shift':
-            kp1 = (coordinates_of_distinguishing_feature[0][0], coordinates_of_distinguishing_feature[0][1])  # координаты признака на первом изображении
+            control_point_1 = (coordinates_of_control_point[0][0], coordinates_of_control_point[0][1])  # координаты признака на первом изображении
 
     except:
-        print('The program is terminated due to lack of alignment data')
-        logging.info('The program is terminated due to lack of alignment data')
+        logprint('The program is terminated due to lack of alignment data')
 
     hdul1.close()
 
     # Определяем место для сохранения
     try:
-        os.mkdir('aligned')
+        os.mkdir(f'{directory}_aligned')
     except:
-        shutil.rmtree('aligned')
-        os.mkdir('aligned')
+        shutil.rmtree(f'{directory}_aligned')
+        os.mkdir(f'{directory}_aligned')
 
     # пересохранение первого файла в новую директорию
     hdul2 = fits.open(f'{directory}/{files[0]}')
     header = hdul2[0].header
     img2 = hdul2[0].data
     hdul2.close()
-    fits.writeto(f'aligned/{files[0][:-4]}_aligned.fits', img2, overwrite=True, header=header)
+    fits.writeto(f'{directory}_aligned/{files[0][:-4]}_aligned.fits', img2, overwrite=True, header=header)
     logging.info(f"Image {1}: {files[0]} - saved")
 
     # Цикл для совмещения остальных файлов
@@ -158,54 +224,54 @@ def alignment_sun_disk(files : list[str] = files, method : str = 'search_max_in_
         hdul2.close()
 
         try:
-            kp2 = (coordinates_of_distinguishing_feature[i+1][0], coordinates_of_distinguishing_feature[i+1][1])  # координаты признака на текущем изображени
+            control_point_2 = (coordinates_of_control_point[i+1][0], coordinates_of_control_point[i+1][1])  # координаты признака на текущем изображени
 
         except:
-            print('The program is terminated due to lack of alignment data')
-            logging.info('The program is terminated due to lack of alignment data')
+            logprint('The program is terminated due to lack of alignment data')
 
         if method == 'search_max_in_area':
 
-            if int(np.sqrt(data.size)) == 1024:
-                max_col, max_row, max_value = find_max_around_point(img2, reversed(kp2), 25)
-                kp2 = (max_row, max_col)
-                logging.info(f"Max - {max_value} in {kp2}")
+            if int(np.sqrt(img2.size)) == 1024:
+                max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 15)
 
-            elif int(np.sqrt(data.size)) == 512:
-                max_col, max_row, max_value = find_max_around_point(img2, reversed(kp2), 13)
-                kp2 = (max_row, max_col)
-                logging.info(f"Max - {max_value} in {kp2}")
+            elif int(np.sqrt(img2.size)) == 512:
+                max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 8)
+                
+            control_point_2 = (max_row, max_col)
+            coordinates_of_max_point_in_area.append(control_point_2)
+            logging.info(f"Max - {max_value} in {control_point_2}")
 
             # Нахождение горизонтального и вертикального сдвигов между изображениями
-            dx = kp1[0] - kp2[0]
-            dy = kp1[1] - kp2[1]
+            dx = control_point_1[0] - control_point_2[0]
+            dy = control_point_1[1] - control_point_2[1]
 
             # Сдвигаем изображение
             img2 = np.roll(img2, dx, axis=1)
             img2 = np.roll(img2, dy, axis=0)
 
             # Сохранение выравненного изображения
-            fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+            fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
             logging.info(f"Image {i+2}: {file} - saved")          
 
         elif method == 'linear_image_shift':
             
             # Нахождение горизонтального и вертикального сдвигов между изображениями
-            dx = kp1[0] - kp2[0]
-            dy = kp1[1] - kp2[1]
+            dx = control_point_1[0] - control_point_2[0]
+            dy = control_point_1[1] - control_point_2[1]
 
             # Сдвигаем изображение
             img2 = np.roll(img2, dx, axis=1)
             img2 = np.roll(img2, dy, axis=0)
 
             # Сохранение выравненного изображения
-            fits.writeto(f'aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+            fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
             logging.info(f"Image {i+2}: {file} - saved")
 
-    print('Finish program alignment of the solar disk')
+    logprint('Finish program alignment of the solar disk')
     print('For more details: read file "logs.log"')
-    logging.info(f'Finish program alignment of the solar disk')
-
+    
+    np.save('setting_of_alignes.npy', coordinates_of_max_point_in_area, )
+    print(coordinates_of_max_point_in_area)
 
 ##############################################################
 if __name__ == '__main__':
