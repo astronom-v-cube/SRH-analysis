@@ -8,6 +8,7 @@ from astropy.io import fits
 import os, sys, re
 import shutil
 import logging
+from tqdm import tqdm
 
 def logprint(msg):
     print(msg)
@@ -21,9 +22,41 @@ logging.info(f'Start program alignment of the solar disk')
 directory = 'test_dataset'
 flag = 'IV'
 flag = 'RL'
-working_mode = 'folfer' # or 'directory_with_folders'
+working_mode = 'directory_with_folders' # 'folder' or 'directory_with_folders'
+source_directory_path = '/run/media/astro/Data/16.07.23'
+destination_folder_path = f'{source_directory_path}/temp_for_aligned'
 vcenter = 350000
 ##########
+
+if working_mode == 'directory_with_folders':
+
+    def copy_first_two_files(source_folder, destination_folder):
+        
+        # Получаем список всех подпапок в исходной папке
+        subfolders = [f.path for f in os.scandir(source_folder) if f.is_dir()]
+        
+        print('Making temp folder and copy files')
+        # Проверяем, существует ли папка назначения, и создаем ее, если нет
+        try:
+            os.makedirs(destination_folder)
+        except FileExistsError:
+            # shutil.rmtree(destination_folder)
+            # os.unlink(destination_folder)
+            # os.rmdir(destination_folder)
+            os.makedirs(destination_folder)
+
+        for subfolder in tqdm(subfolders):
+            # Получаем список файлов в подпапке и сортируем их по имени
+            files = sorted([f.path for f in os.scandir(subfolder) if f.is_file()], key=lambda x: x.lower())
+
+            # Копируем первые два файла в новую папку
+            for i in range(min(2, len(files))):
+                file_to_copy = files[i]
+                destination_file = os.path.join(destination_folder, os.path.basename(file_to_copy))
+                shutil.copy(file_to_copy, destination_file)
+
+    copy_first_two_files(source_directory_path, destination_folder_path)
+
 logging.info(f'Path to files: {directory}')
 
 pattern = re.compile(r'(?<=[_.])\d{4,5}(?=[_.])')
@@ -35,11 +68,18 @@ def extract_number(filename):
     freqs.add(int(match.group()))
     return int(match.group())
 
-files = sorted(os.listdir(directory), key=extract_number)
-freqs = sorted(list(freqs))
+if working_mode == 'folfer':
+    files = sorted(os.listdir(directory), key=extract_number)
+    logging.info(f'Working mode - files in folder')
+    
+elif working_mode == 'directory_with_folders':
+    files = sorted(os.listdir(destination_folder_path), key=extract_number)
+    logging.info(f'Working mode - folders in directory')
 
 logging.info(f'Find {len(files)} files')
 logging.info(f'List files: \n {files}')
+
+freqs = sorted(list(freqs))
 
 # Функция для обработки событий клика мыши
 def onclick(event):
@@ -89,11 +129,13 @@ if flag == 'RL':
     iterable = range(0, len(files)) 
 elif flag == 'IV':
     iterable = range(0, len(files), 2)
-
+    
+current_directory = directory if working_mode == 'folder' else destination_folder_path
+    
 for i in iterable:
 
     if flag == 'RL':
-        data = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
+        data = fits.open(f'{current_directory}/{files[i]}', ignore_missing_simple=True)[0].data
         # Создание графика и отображение данных
         fig, ax = plt.subplots(figsize=(9, 9))
         im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]], norm=TwoSlopeNorm(vmin=0, vcenter=vcenter))
@@ -104,8 +146,8 @@ for i in iterable:
 
     elif flag == 'IV':
         # Считывание файлов
-        data1 = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
-        data2 = fits.open(f'{directory}/{files[i+1]}', ignore_missing_simple=True)[0].data
+        data1 = fits.open(f'{current_directory}/{files[i]}', ignore_missing_simple=True)[0].data
+        data2 = fits.open(f'{current_directory}/{files[i+1]}', ignore_missing_simple=True)[0].data
 
         # Создание регулярного выражения
         pattern = re.compile(r'(RCP|LCP|R|L)')
@@ -136,7 +178,7 @@ for i in iterable:
 
     # Создание слайдера для редактирования границ цветовой шкалы
     ax_slider = plt.axes([0.25, 0.03, 0.5, 0.01], facecolor='lightgoldenrodyellow')
-    slider = Slider(ax_slider, 'Threshold', im.norm.vmin, im.norm.vmax, valinit=im.norm.vmax/2)
+    slider = Slider(ax_slider, 'Threshold', im.norm.vmin, im.norm.vmax, valinit=im.norm.vmax)
     slider.on_changed(update)
 
     # Список для хранения координат кликов пользователя
@@ -153,7 +195,7 @@ for i in iterable:
     # Вывод последней координаты двойного клика пользователя
     if len(click_coords) > 0:
         print(f"For image {i+1} last double click coordinates: {str(click_coords[-1])}")
-        logging.info(f"For image {i+1} last double click coordinates: {str(click_coords[-1])}")
+        logging.info(f"For image {i+1} - {files[i]} - last double click coordinates: {str(click_coords[-1])}")
         if flag == 'RL':
             coordinates_of_control_point.append(click_coords[-1])
             plt.close()
@@ -165,11 +207,13 @@ for i in iterable:
         print("No double click coordinates recorded")
         logging.info(f"No double click coordinates recorded")
         sys.exit()
-
+    
 def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area', area : int = None):
+    
     # Загрузка первого файла и нахождение координат отличительного признака
-    hdul1 = fits.open(f'{directory}/{files[0]}')
+    hdul1 = fits.open(f'{current_directory}/{files[0]}')
     img1 = hdul1[0].data  # данные первого изображения
+    hdul1.close()
 
     try:
         if method == 'search_max_in_area':
@@ -196,27 +240,27 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
     except:
         logprint('The program is terminated due to lack of alignment data')
 
-    hdul1.close()
-
     # Определяем место для сохранения
     try:
-        os.mkdir(f'{directory}_aligned')
+        os.mkdir(f'{current_directory}_aligned')
     except:
-        shutil.rmtree(f'{directory}_aligned')
-        os.mkdir(f'{directory}_aligned')
+        shutil.rmtree(f'{current_directory}_aligned')
+        os.mkdir(f'{current_directory}_aligned')
 
     # пересохранение первого файла в новую директорию
-    hdul2 = fits.open(f'{directory}/{files[0]}')
+    hdul2 = fits.open(f'{current_directory}/{files[0]}')
     header = hdul2[0].header
     img2 = hdul2[0].data
     hdul2.close()
-    fits.writeto(f'{directory}_aligned/{files[0][:-4]}_aligned.fits', img2, overwrite=True, header=header)
-    logging.info(f"Image {1}: {files[0]} - saved")
+    
+    if working_mode == 'folder':
+        fits.writeto(f'{current_directory}_aligned/{files[0][:-4]}_aligned.fits', img2, overwrite=True, header=header)
+        logging.info(f"Image {1}: {files[0]} - saved")
 
     # Цикл для совмещения остальных файлов
     for i, file in enumerate(files[1:]):
         # Загрузка файла и нахождение координат отличительного признака
-        hdul2 = fits.open(f'{directory}/{file}')
+        hdul2 = fits.open(f'{current_directory}/{file}')
         header = hdul2[0].header
         img2 = hdul2[0].data
         hdul2.close()
@@ -246,10 +290,11 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
             # Сдвигаем изображение
             img2 = np.roll(img2, dx, axis=1)
             img2 = np.roll(img2, dy, axis=0)
-
-            # Сохранение выравненного изображения
-            fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
-            logging.info(f"Image {i+2}: {file} - saved")          
+            
+            if working_mode == 'folder':
+                # Сохранение выравненного изображения
+                fits.writeto(f'{current_directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+                logging.info(f"Image {i+2}: {file} - saved")          
 
         elif method == 'linear_image_shift':
             
@@ -261,15 +306,18 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
             img2 = np.roll(img2, dx, axis=1)
             img2 = np.roll(img2, dy, axis=0)
 
-            # Сохранение выравненного изображения
-            fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
-            logging.info(f"Image {i+2}: {file} - saved")
+            if working_mode == 'folder':
+                # Сохранение выравненного изображения
+                fits.writeto(f'{current_directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+                logging.info(f"Image {i+2}: {file} - saved")
 
     logprint('Finish program alignment of the solar disk')
     print('For more details: read file "logs.log"')
     
-    np.save('setting_of_alignes.npy', coordinates_of_max_point_in_area)
-    print(coordinates_of_max_point_in_area)
+    setting_of_alignes = np.array([freqs, [coordinates_of_max_point_in_area[i:i+2] for i in range(0, len(coordinates_of_max_point_in_area), 2)]])
+    
+    np.save('setting_of_alignes.npy', setting_of_alignes)
+    print(setting_of_alignes)
 
 ##############################################################
 if __name__ == '__main__':
