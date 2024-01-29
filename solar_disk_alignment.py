@@ -18,11 +18,15 @@ logging.info(f'Start program alignment of the solar disk')
 # norm=TwoSlopeNorm(vmin=0, vcenter=vcenter)
 
 ##########
-directory = 'test_dataset'
+directory = '08-26-46'
 flag = 'IV'
 flag = 'RL'
-working_mode = 'folfer' # or 'directory_with_folders'
-vcenter = 350000
+vcenter = 25000
+x_limit = (600, 750)
+y_limit = (520, 700)
+
+x_limit = (350, 450)
+y_limit = (580, 680)
 ##########
 logging.info(f'Path to files: {directory}')
 
@@ -36,7 +40,7 @@ def extract_number(filename):
     return int(match.group())
 
 files = sorted(os.listdir(directory), key=extract_number)
-freqs = sorted(list(freqs))
+freqs = sorted(list(freqs), reverse = True)
 
 logging.info(f'Find {len(files)} files')
 logging.info(f'List files: \n {files}')
@@ -84,6 +88,7 @@ def find_max_around_point(matrix : np.ndarray, point : tuple, size : int):
 
 coordinates_of_control_point = []
 coordinates_of_max_point_in_area = []
+square_psf = list()
 
 if flag == 'RL':
     iterable = range(0, len(files)) 
@@ -93,20 +98,39 @@ elif flag == 'IV':
 for i in iterable:
 
     if flag == 'RL':
-        data = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
+        hdul = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)
+        data = hdul[0].data
+        header = hdul[0].header
+        
+        psf_a = header['PSF_ELLA']
+        psf_b = header['PSF_ELLB']
+        square_psf.append(int(3.1415 * psf_a * psf_b))
+        
         # Создание графика и отображение данных
         fig, ax = plt.subplots(figsize=(9, 9))
+        vcenter = - 1500 * (i+1) + 118000
         im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]], norm=TwoSlopeNorm(vmin=0, vcenter=vcenter))
-        # mplcursors.cursor(hover=True)
+        
+        ax.set_xlim(x_limit) if len(x_limit) != 0 else logging.info(f'Limits for X not found')
+        ax.set_ylim(y_limit) if len(y_limit) != 0 else logging.info(f'Limits for Y not found')
+        # mplcursors.cursor() # hover=True
         plt.title(f'{files[i]}')
         # fig.colorbar(im)
         # fig.tight_layout()
 
     elif flag == 'IV':
         # Считывание файлов
-        data1 = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)[0].data
-        data2 = fits.open(f'{directory}/{files[i+1]}', ignore_missing_simple=True)[0].data
-
+        hdul1 = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)
+        data1 = hdul1[0].data
+        header1 = hdul1[0].header
+    
+        psf_a = header1['PSF_ELLA']
+        psf_b = header1['PSF_ELLB']
+        square_psf.append(int(3.1415 * psf_a * psf_b))
+        
+        hdul2 = fits.open(f'{directory}/{files[i+1]}', ignore_missing_simple=True)
+        data2 = hdul2[0].data
+        
         # Создание регулярного выражения
         pattern = re.compile(r'(RCP|LCP|R|L)')
         # поиск совпадений в названии первого файла
@@ -128,7 +152,7 @@ for i in iterable:
 
         # Создание графика и отображение данных
         fig, ax = plt.subplots(figsize=(9, 9))
-        im = ax.imshow(-V, origin='lower', cmap='plasma', extent=[0, V.shape[1], 0, V.shape[0]], norm=colors.Normalize(vmin=0, vmax=350000))
+        im = ax.imshow(I, origin='lower', cmap='plasma', extent=[0, I.shape[1], 0, I.shape[0]], norm=colors.Normalize(vmin=0, vmax=350000))
         # mplcursors.cursor(hover=True)
         plt.title(f'{files[i]}')
         # fig.colorbar(im)
@@ -230,7 +254,7 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
         if method == 'search_max_in_area':
 
             if int(np.sqrt(img2.size)) == 1024:
-                max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 15)
+                max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 24)
 
             elif int(np.sqrt(img2.size)) == 512:
                 max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 8)
@@ -270,6 +294,11 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
     
     np.save('setting_of_alignes.npy', coordinates_of_max_point_in_area)
     print(coordinates_of_max_point_in_area)
+
+    square_psf_list = sorted(square_psf, reverse=True)
+    np.savez('psf_square.npz', freqs = freqs, psf_square = square_psf_list)
+    
+    print(square_psf_list)
 
 ##############################################################
 if __name__ == '__main__':

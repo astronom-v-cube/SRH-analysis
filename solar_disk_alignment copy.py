@@ -27,6 +27,7 @@ flag = 'IV'
 flag = 'RL'
 working_mode = 'directory_with_folders' # 'folder' or 'directory_with_folders'
 source_directory_path = '/run/media/dmitry/Дмитрий/datasets/16.07.23'
+source_directory_path = "E:/datasets/16.07.23"
 destination_folder_path = f'{source_directory_path}/temp_for_aligned'
 vcenter = 25000
 x_limit = (600, 775)
@@ -57,14 +58,13 @@ if working_mode == 'directory_with_folders':
                 file_to_copy = files[i]
                 destination_file = os.path.join(destination_folder, os.path.basename(file_to_copy))
                 shutil.copy(file_to_copy, destination_file)
-
+                
     copy_first_two_files(source_directory_path, destination_folder_path)
 
 logging.info(f'Path to files: {directory}')
 
 pattern = re.compile(r'(?<=[_.])\d{4,5}(?=[_.])')
 
-# функция для извлечения цифр из названия файла
 def extract_number(filename):
     match = pattern.search(filename)
     freqs.add(int(match.group()))
@@ -72,17 +72,17 @@ def extract_number(filename):
 
 freqs = set()
 
-if working_mode == 'folder':
+if working_mode == 'folfer':
     files = sorted(os.listdir(directory), key=extract_number)
     logging.info(f'Working mode - files in folder')
-    logging.info(f'Find {len(files)} files')
-    logging.info(f'List files: \n {files}')
     
 elif working_mode == 'directory_with_folders':
-    folders = sorted(os.listdir(destination_folder_path), key=extract_number)
+    files = sorted(os.listdir(destination_folder_path), key=extract_number)
+    folders = sorted(os.listdir(source_directory_path))
     logging.info(f'Working mode - folders in directory')
-    logging.info(f'Find {len(folders)} folders')
-    logging.info(f'List folders: \n {folders}')
+
+logging.info(f'Find {len(files)} files')
+logging.info(f'List files: \n {files}')
 
 freqs = sorted(list(freqs))
 
@@ -322,84 +322,86 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
                     logging.info(f"Image {i+2}: {file} - saved")
 
     elif working_mode == 'directory_with_folders':
-        
+                
         # копируем первую папку, так как все привязки делаем по ней
         shutil.copytree(f'{source_directory_path}/{freqs[0]}', f'{source_directory_path}_aligned/{freqs[0]}', dirs_exist_ok=True)        
         logging.info(f"Image {freqs[0]} - saved")
+        
+        try:
+            for fq in freqs[1:]:
+                os.mkdir(f'{source_directory_path}_aligned/{fq}')
+                logging.info(f'The folder has been created to save the results at the {fq} frequency')
+        except Error as err: 
+            logging.info(f'The folder for saving the results has not been created: {err}')
+            
+        for k, freq_folder in enumerate(freqs[1:]):
+            
+            files = [file for file in listdir(f'{source_directory_path}/{freq_folder}') if isfile(f'{source_directory_path}/{freq_folder}/{file}')]
 
-        for k, folder in enumerate(folders):
-            
-            files = [f for f in listdir(f'{source_directory_path}/{folder}') if isfile(join(source_directory_path, f))]
-            print(files)
-            
             # Цикл для совмещения остальных файлов
             for i, file in enumerate(files):
-                print('*****************')
                 print(file)
-                # # Загрузка файла и нахождение координат отличительного признака
-                # hdul2 = fits.open(f'{current_directory}/{file}')
-                # header = hdul2[0].header
-                # img2 = hdul2[0].data
-                # hdul2.close()
+                # Загрузка файла и нахождение координат отличительного признака
+                hdul2 = fits.open(f'{source_directory_path}/{freq_folder}/{file}')
+                header = hdul2[0].header
+                img2 = hdul2[0].data
+                hdul2.close()
 
-                # try:
-                #     control_point_2 = (coordinates_of_control_point[i+1][0], coordinates_of_control_point[i+1][1])  # координаты признака на текущем изображени
+                try:
+                    control_point_2 = (coordinates_of_control_point[k+1][0], coordinates_of_control_point[k+1][1])  # координаты признака на текущем изображени
 
-                # except:
-                #     logprint('The program is terminated due to lack of alignment data')
+                except:
+                    logprint('The program is terminated due to lack of alignment data')
 
-                # if method == 'search_max_in_area':
+                if method == 'search_max_in_area':
 
-                #     if int(np.sqrt(img2.size)) == 1024:
-                #         max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 15)
+                    if int(np.sqrt(img2.size)) == 1024:
+                        max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 15)
 
-                #     elif int(np.sqrt(img2.size)) == 512:
-                #         max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 8)
+                    elif int(np.sqrt(img2.size)) == 512:
+                        max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 8)
                         
-                #     control_point_2 = (max_row, max_col)
-                #     coordinates_of_max_point_in_area.append(control_point_2)
-                #     logging.info(f"Max - {max_value} in {control_point_2}")
+                    control_point_2 = (max_row, max_col)
+                    logging.info(f"Max - {max_value} in {control_point_2}")
 
-                #     # Нахождение горизонтального и вертикального сдвигов между изображениями
-                #     dx = control_point_1[0] - control_point_2[0]
-                #     dy = control_point_1[1] - control_point_2[1]
+                    # Нахождение горизонтального и вертикального сдвигов между изображениями
+                    dx = control_point_1[0] - control_point_2[0]
+                    dy = control_point_1[1] - control_point_2[1]
 
-                #     # Сдвигаем изображение
-                #     img2 = np.roll(img2, dx, axis=1)
-                #     img2 = np.roll(img2, dy, axis=0)
+                    # Сдвигаем изображение
+                    img2 = np.roll(img2, dx, axis=1)
+                    img2 = np.roll(img2, dy, axis=0)
                     
-                #     if working_mode == 'folder':
-                #         # Сохранение выравненного изображения
-                #         fits.writeto(f'{current_directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
-                #         logging.info(f"Image {i+2}: {file} - saved")     
+                    # Сохранение выравненного изображения
+                    fits.writeto(f'{source_directory_path}_aligned/{freq_folder}/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+                    logging.info(f"Image {i+2}: {file} - saved")     
 
-                # elif method == 'linear_image_shift':
+                elif method == 'linear_image_shift':
                     
-                #     # Нахождение горизонтального и вертикального сдвигов между изображениями
-                #     dx = control_point_1[0] - control_point_2[0]
-                #     dy = control_point_1[1] - control_point_2[1]
+                    # Нахождение горизонтального и вертикального сдвигов между изображениями
+                    dx = control_point_1[0] - control_point_2[0]
+                    dy = control_point_1[1] - control_point_2[1]
 
-                #     # Сдвигаем изображение
-                #     img2 = np.roll(img2, dx, axis=1)
-                #     img2 = np.roll(img2, dy, axis=0)
+                    # Сдвигаем изображение
+                    img2 = np.roll(img2, dx, axis=1)
+                    img2 = np.roll(img2, dy, axis=0)
 
-                #     if working_mode == 'folder':
-                #         # Сохранение выравненного изображения
-                #         fits.writeto(f'{current_directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
-                #         logging.info(f"Image {i+2}: {file} - saved")
-
-        
-        
+                    # Сохранение выравненного изображения
+                    fits.writeto(f'{source_directory_path}_aligned/{freq_folder}/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+                    logging.info(f"Image {i+2}: {file} - saved")
+                    
+            logprint('****************************')
 
     
     logprint('Finish program alignment of the solar disk')
     print('For more details: read file "logs.log"')
+    print(coordinates_of_max_point_in_area)
     
-    setting_of_alignes = np.array([freqs, [coordinates_of_max_point_in_area[i:i+2] for i in range(0, len(coordinates_of_max_point_in_area), 2)]])
+    # setting_of_alignes = np.array([freqs, [coordinates_of_max_point_in_area[i:i+2] for i in range(0, len(coordinates_of_max_point_in_area), 2)]])
     
-    np.save(f'setting_of_alignes_{files[0][4:12]}.npy', setting_of_alignes)
-    # np.load('setting_of_alignes_20230716.npy', allow_pickle=True)
-    print(setting_of_alignes)
+    # np.save(f'setting_of_alignes_{files[0][4:12]}.npy', setting_of_alignes)
+    # # np.load('setting_of_alignes_20230716.npy', allow_pickle=True)
+    # print(setting_of_alignes)
 
 ##############################################################
 if __name__ == '__main__':

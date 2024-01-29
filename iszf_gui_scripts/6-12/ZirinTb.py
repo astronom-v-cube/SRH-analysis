@@ -47,5 +47,3 @@ class ZirinTb():
     def getSfuAtFrequency(self, f):
 #        return 2*constants.k*self.getTbAtFrequency(f)*1e3/(constants.c/(f*1e9))**2 * NP.pi*self.solarDiskDiameter**2 / (4*NP.log(2)) / 1e-22
         return 2*constants.k*self.getTbAtFrequency(f)*1e3/(constants.c/(f*1e9))**2 * NP.pi*self.solarDiskRadius**2 / 1e-22
-
-        
