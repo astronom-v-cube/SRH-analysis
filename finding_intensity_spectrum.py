@@ -75,48 +75,45 @@ class ZirinTb():
 zirin = ZirinTb()
 
 def find_intensity_in_point(matrix : np.ndarray, point : tuple) -> float:
-    """     
-    The function returns the intensity value at a specific point. 
-    The input arguments of the function are the matrix `matrix` (two-dimensional array) and the point `point` (coordinates).
-    The function returns the intensity value in point.
-    """
     x, y = point
     return matrix[y][x]
 
 def find_intensity_in_four_point(matrix: np.ndarray, point: tuple) -> float:
-    """
-    The function returns the intensity value at a specific point and three neighboring points on the right and top.
-    The input arguments of the function are the matrix `matrix` (two-dimensional array) and the point `point` (coordinates).
-    The function returns the average of the intensity values at the four points.
-    """
     x, y = point
     intensity_sum = matrix[y][x] + matrix[y][x+1] + matrix[y+1][x] + matrix[y+1][x+1]
     intensity_avg = intensity_sum
     return intensity_avg
 
 def find_intensity_in_nine_point(matrix: np.ndarray, point: tuple) -> float:
-    """
-    The function returns the intensity value at a specific point and three neighboring points on the right and top.
-    The input arguments of the function are the matrix `matrix` (two-dimensional array) and the point `point` (coordinates).
-    The function returns the average of the intensity values at the nine points.
-    """
     x, y = point
     intensity_sum = matrix[y+1][x-1] + matrix[y+1][x] + matrix[y+1][x+1] + matrix[y][x-1] +  matrix[y][x] + matrix[y][x+1] + matrix[y-1][x-1] + matrix[y-1][x] + matrix[y-1][x+1]
     intensity_avg = intensity_sum
     return intensity_avg
 
 def find_intensity_in_alotof_point(matrix: np.ndarray, point: tuple) -> float:
-    """
-    The function returns the intensity value at a specific point and three neighboring points on the right and top.
-    The input arguments of the function are the matrix `matrix` (two-dimensional array) and the point `point` (coordinates).
-    The function returns the average of the intensity values at the nine points.
-    """
     x, y = point
     data_array = matrix[y-80:y+80, x-80:x+80]
     #fig = plt.figure()
     #plt.imshow(data_array)
     #plt.plot()
     intensity_avg = np.sum(data_array)
+    return intensity_avg
+
+def find_intensity_in_sun_disk(matrix: np.ndarray, point: tuple) -> float:
+    x1, y1 = np.indices(matrix.shape)
+    center_x, center_y = 512, 512
+    radius = 350
+
+    # вычисляем расстояние от каждой точки до центра окружности
+    distance_from_center = np.sqrt((x1 - center_x)**2 + (y1 - center_y)**2)
+
+    # создаем маску, где значения True соответствуют точкам, входящим в окружность
+    mask = distance_from_center <= radius
+
+    # вырезаем данные внутри круга
+    data_inside_circle = img[mask]
+    print(len(data_inside_circle))
+    intensity_avg = np.sum(data_inside_circle)
     return intensity_avg
 
 # coordinates = (324, 628)
