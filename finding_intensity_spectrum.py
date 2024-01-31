@@ -102,16 +102,14 @@ def find_intensity_in_alotof_point(matrix: np.ndarray, point: tuple) -> float:
 def find_intensity_in_sun_disk(matrix: np.ndarray, point: tuple) -> float:
     x1, y1 = np.indices(matrix.shape)
     center_x, center_y = 512, 512
-    radius = 350
+    radius = 816 / 2
 
     # вычисляем расстояние от каждой точки до центра окружности
     distance_from_center = np.sqrt((x1 - center_x)**2 + (y1 - center_y)**2)
-
-    # создаем маску, где значения True соответствуют точкам, входящим в окружность
     mask = distance_from_center <= radius
-
-    # вырезаем данные внутри круга
     data_inside_circle = img[mask]
+    mask = data_inside_circle > 0
+    data_inside_circle = data_inside_circle[mask]
     print(len(data_inside_circle))
     intensity_avg = np.sum(data_inside_circle)
     return intensity_avg
