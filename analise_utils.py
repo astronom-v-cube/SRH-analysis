@@ -39,6 +39,7 @@ class ZirinTb:
         return A + B*f + C*f**-1.8
     
     def __init__(self):
+        
         self.frequency = np.array([1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.2, 5.0, 5.8, 7.0, 8.2, 9.4, 10.6, 11.8, 13.2, 14.8, 16.4, 18.0]) # frequency [GHz]
         self.Tb = np.array([70.5, 63.8, 52.2, 42.9, 32.8, 27.1, 24.2, 21.7, 19.4, 17.6, 15.9, 14.1, 12.9, 12.2, 11.3, 11.0, 10.8, 10.8, 10.7, 10.3]) # brightness temperature [1e3K]
         self.guess = [1, 1, 1]
@@ -132,6 +133,7 @@ class FindIntensity:
     
 class ArrayOperations:
     
+    @staticmethod    
     def find_max_around_point(matrix : np.ndarray, point : tuple, size : int) -> tuple:
         """Функция выполняет поиск максимального значения в матрице определенного размера вокруг заданной точки.
 
@@ -161,6 +163,46 @@ class ArrayOperations:
         max_col = col_indices[max_indices[1]]
         
         return (max_row, max_col, max_value)
+    
+    @staticmethod    
+    def find_center_of_mass(matrix: np.ndarray, point: tuple, size: int) -> tuple:
+        """Функция выполняет поиск центра тяжести области методом взвешенного среднего. Функция вычисляет матрицу меньшего размера вокруг указанной точки и находит максимальное значение в этой области. Затем она устанавливает пороговое значение как фракцию максимального значения и находит индексы элементов матрицы, которые превышают этот порог. Если ни один элемент не превышает порог, центр тяжести вычисляется как центр области. В противном случае, используются индексы элементов, превышающих порог, для вычисления центра тяжести методом среднего.
+
+        Args:
+            matrix (np.ndarray):  матрица (двумерный массив)
+            point (tuple): указанная точка - координаты
+            size (int): размер области поиска
+
+        Returns:
+            tuple: кортеж из двух значений: строка ```center_row``` и столбец ```center_col``` координат центра тяжести, определенного по элементам матрицы в указанной области, а также значение ```max_value``` самого большого элемента в указанной области 
+        """
+        # Get the indices of the smaller region around the point
+        row, col = point
+        half_size = size // 2
+        row_indices = range(max(0, row - half_size), min(matrix.shape[0], row + half_size + 1))
+        col_indices = range(max(0, col - half_size), min(matrix.shape[1], col + half_size + 1))
+        
+        # Get the smaller region from the original matrix
+        smaller_matrix = matrix[np.ix_(row_indices, col_indices)]
+        max_value = np.max(smaller_matrix)
+        
+        # Calculate threshold as a fraction of the maximum value in the matrix
+        threshold = np.max(smaller_matrix) * 0.1  # for example, we can use 10% of the maximum value as threshold
+        
+        # Find indices of elements above the threshold
+        high_value_indices = np.where(smaller_matrix > threshold)
+        
+        # If no elements exceed the threshold, return the center of the region
+        if len(high_value_indices[0]) == 0:
+            center_row = row_indices[len(row_indices) // 2]
+            center_col = col_indices[len(col_indices) // 2]
+        else:
+            # Calculate center of mass using indices of elements above threshold
+            center_row = np.mean(row_indices[high_value_indices[0]])
+            center_col = np.mean(col_indices[high_value_indices[1]])
+        
+        return (center_row, center_col, max_value)
+
     
 class MplFunction:
     
