@@ -13,6 +13,7 @@ class Extract:
     
     def __init__(self) -> None:
         self.freqs_pattern = re.compile(r'(?<=[_.])\d{4,5}(?=[_.])')   # паттерн извлечения частоты
+        self.datetime_pattern = re.compile(r'\d{8}T\d{6}')             # паттерн для извлечения даты и времени
         self.polarization_pattern = re.compile(r'(RCP|LCP|R|L)')       # паттерн извлечения поляризации
     
     def extract_number(self, filename: str, freqs_array_name: set = None) -> int:
@@ -29,6 +30,18 @@ class Extract:
         if freqs_array_name is not None:
             freqs_array_name.add(int(match.group()))
         return int(match.group())
+    
+    def extract_datetime(self, filename: str) -> str:
+        """Функция для извлечения даты и времени из названия файла.
+
+        Args:
+            filename (str): название ```.fits``` файла с данными или путь директории, вообщем - любая строка, содержащая дату и время в таком формате
+
+        Returns:
+            str: строка, содержащая извлеченную дату и время в формате "ГГГГММДДТЧЧММСС"
+        """
+        match = self.datetime_pattern.search(filename)
+        return match.group()
 
 class ZirinTb:
 # Zirin H. et al.
