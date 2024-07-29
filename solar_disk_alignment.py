@@ -1,20 +1,16 @@
 from matplotlib.colors import TwoSlopeNorm
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-import mplcursors
 import matplotlib.colors as colors
 import numpy as np
 from astropy.io import fits
 import os, sys, re
-import shutil
 import logging
+from analise_utils import OsOperations, ZirinTb, FindIntensity, MplFunction, Monitoring, Extract, ConvertingArrays, ArrayOperations
 
-def logprint(msg):
-    print(msg)
-    logging.info(msg)
-    
-logging.basicConfig(filename = 'logs.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+Monitoring.start_log('log')
 logging.info(f'Start program alignment of the solar disk')
+extract = Extract()
 # norm=TwoSlopeNorm(vmin=0, vcenter=vcenter)
 
 ##########
@@ -22,6 +18,7 @@ directory = '08-26-46'
 flag = 'IV'
 flag = 'RL'
 vcenter = 25000
+counter_level = 0.5
 x_limit = (600, 750)
 y_limit = (520, 700)
 
@@ -30,16 +27,8 @@ y_limit = (580, 680)
 ##########
 logging.info(f'Path to files: {directory}')
 
-pattern = re.compile(r'(?<=[_.])\d{4,5}(?=[_.])')
 freqs = set()
-
-# функция для извлечения цифр из названия файла
-def extract_number(filename):
-    match = pattern.search(filename)
-    freqs.add(int(match.group()))
-    return int(match.group())
-
-files = sorted(os.listdir(directory), key=extract_number)
+files = sorted(os.listdir(directory), key=lambda x: extract.extract_number(x, freqs))
 freqs = sorted(list(freqs), reverse = True)
 
 logging.info(f'Find {len(files)} files')
@@ -61,37 +50,12 @@ def update(val):
     im.set_clim(vmin, vmax)
     fig.canvas.draw_idle()
 
-def find_max_around_point(matrix : np.ndarray, point : tuple, size : int):
-    """     
-    The function searches for the maximum value in the matrix within a certain size around a given point. 
-    The input arguments of the function are the matrix `matrix` (two-dimensional array), the specified point `point` (coordinates) and the size of the search area `size` (integer).
-    The function returns a tuple of three values: the row `max_row` and column `max_col` of the maximum value, as well as the value `max_value` of the largest element in the specified area.
-    """
-    # Get the indices of the smaller region around the point
-    row, col = point
-    half_size = size // 2
-    row_indices = range(max(0, row - half_size), min(matrix.shape[0], row + half_size + 1))
-    col_indices = range(max(0, col - half_size), min(matrix.shape[1], col + half_size + 1))
-    
-    # Get the smaller region from the original matrix
-    smaller_matrix = matrix[np.ix_(row_indices, col_indices)]
-    
-    # Find the maximum value in the smaller region
-    max_value = np.max(smaller_matrix)
-    
-    # Get the coordinates of the maximum value in the original matrix
-    max_indices = np.unravel_index(np.argmax(smaller_matrix), smaller_matrix.shape)
-    max_row = row_indices[max_indices[0]]
-    max_col = col_indices[max_indices[1]]
-    
-    return (max_row, max_col, max_value)
-
 coordinates_of_control_point = []
-coordinates_of_max_point_in_area = []
+coordinates_of_reference_point_in_area = []
 square_psf = list()
 
 if flag == 'RL':
-    iterable = range(0, len(files)) 
+    iterable = range(0, len(files))
 elif flag == 'IV':
     iterable = range(0, len(files), 2)
 
@@ -101,16 +65,16 @@ for i in iterable:
         hdul = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)
         data = hdul[0].data
         header = hdul[0].header
-        
+
         psf_a = header['PSF_ELLA']
         psf_b = header['PSF_ELLB']
         square_psf.append(int(3.1415 * psf_a * psf_b))
-        
+
         # Создание графика и отображение данных
         fig, ax = plt.subplots(figsize=(9, 9))
         vcenter = - 1500 * (i+1) + 118000
         im = ax.imshow(data, origin='lower', cmap='plasma', extent=[0, data.shape[1], 0, data.shape[0]], norm=TwoSlopeNorm(vmin=0, vcenter=vcenter))
-        
+
         ax.set_xlim(x_limit) if len(x_limit) != 0 else logging.info(f'Limits for X not found')
         ax.set_ylim(y_limit) if len(y_limit) != 0 else logging.info(f'Limits for Y not found')
         # mplcursors.cursor() # hover=True
@@ -123,14 +87,14 @@ for i in iterable:
         hdul1 = fits.open(f'{directory}/{files[i]}', ignore_missing_simple=True)
         data1 = hdul1[0].data
         header1 = hdul1[0].header
-    
+
         psf_a = header1['PSF_ELLA']
         psf_b = header1['PSF_ELLB']
         square_psf.append(int(3.1415 * psf_a * psf_b))
-        
+
         hdul2 = fits.open(f'{directory}/{files[i+1]}', ignore_missing_simple=True)
         data2 = hdul2[0].data
-        
+
         # Создание регулярного выражения
         pattern = re.compile(r'(RCP|LCP|R|L)')
         # поиск совпадений в названии первого файла
@@ -200,34 +164,39 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
 
             control_point_1 = (coordinates_of_control_point[0][0], coordinates_of_control_point[0][1])  # координаты признака на первом изображении
             if int(np.sqrt(img1.size)) == 1024:
-                max_col, max_row, max_value = find_max_around_point(img1, reversed(control_point_1), 15)
+                reference_col, reference_row, max_value = ArrayOperations.find_max_around_point(img1, reversed(control_point_1), 28)
 
             elif int(np.sqrt(img1.size)) == 512:
-                max_col, max_row, max_value = find_max_around_point(img1, reversed(control_point_1), 13)
-                
-            control_point_1 = (max_row, max_col)
-            coordinates_of_max_point_in_area.append(control_point_1)
-            logging.info(f"Max - {max_value} in {control_point_1}")
-                
+                reference_col, reference_row, max_value = ArrayOperations.find_max_around_point(img1, reversed(control_point_1), 14)
+
+            control_point_1 = (reference_row, reference_col)
+            coordinates_of_reference_point_in_area.append(control_point_1)
+            logging.info(f"Reference - {max_value} in {control_point_1}")
+
             # else:
             #     max_col, max_row, max_value = find_max_around_point(img1, reversed(control_point_1), area)
             #     control_point_1 = (max_col, max_row)
             #     logging.info(f"Max - {max_value} in {control_point_1}")
 
+        elif method == 'contour_weighted_average':
+
+            control_point_1 = (coordinates_of_control_point[0][0], coordinates_of_control_point[0][1])  # координаты признака на первом изображении
+            reference_col, reference_row = ArrayOperations.calculate_weighted_centroid(img1, control_point_1, 0.5)
+
+            control_point_1 = (reference_col, reference_row)
+            coordinates_of_reference_point_in_area.append(control_point_1)
+            logging.info(f"Reference - {max_value} in {control_point_1}")
+
         elif method == 'linear_image_shift':
             control_point_1 = (coordinates_of_control_point[0][0], coordinates_of_control_point[0][1])  # координаты признака на первом изображении
 
     except:
-        logprint('The program is terminated due to lack of alignment data')
+        Monitoring.logprint('The program is terminated due to lack of alignment data')
 
     hdul1.close()
 
     # Определяем место для сохранения
-    try:
-        os.mkdir(f'{directory}_aligned')
-    except:
-        shutil.rmtree(f'{directory}_aligned')
-        os.mkdir(f'{directory}_aligned')
+    OsOperations.create_place(directory, 'aligned')
 
     # пересохранение первого файла в новую директорию
     hdul2 = fits.open(f'{directory}/{files[0]}')
@@ -249,55 +218,51 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
             control_point_2 = (coordinates_of_control_point[i+1][0], coordinates_of_control_point[i+1][1])  # координаты признака на текущем изображени
 
         except:
-            logprint('The program is terminated due to lack of alignment data')
+            Monitoring.logprint('The program is terminated due to lack of alignment data')
 
         if method == 'search_max_in_area':
 
             if int(np.sqrt(img2.size)) == 1024:
-                max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 24)
+                reference_col, reference_row, max_value = ArrayOperations.find_max_around_point(img2, reversed(control_point_2), 28)
 
             elif int(np.sqrt(img2.size)) == 512:
-                max_col, max_row, max_value = find_max_around_point(img2, reversed(control_point_2), 8)
-                
-            control_point_2 = (max_row, max_col)
-            coordinates_of_max_point_in_area.append(control_point_2)
-            logging.info(f"Max - {max_value} in {control_point_2}")
+                reference_col, reference_row, max_value = ArrayOperations.find_max_around_point(img2, reversed(control_point_2), 14)
 
-            # Нахождение горизонтального и вертикального сдвигов между изображениями
-            dx = control_point_1[0] - control_point_2[0]
-            dy = control_point_1[1] - control_point_2[1]
+            control_point_2 = (reference_row, reference_col)
+            coordinates_of_reference_point_in_area.append(control_point_2)
+            logging.info(f"Reference - {max_value} in {control_point_2}")
 
-            # Сдвигаем изображение
-            img2 = np.roll(img2, dx, axis=1)
-            img2 = np.roll(img2, dy, axis=0)
+        elif method == 'contour_weighted_average':
 
-            # Сохранение выравненного изображения
-            fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
-            logging.info(f"Image {i+2}: {file} - saved")          
+            reference_col, reference_row, max_value = ArrayOperations.calculate_weighted_centroid(img2, reversed(control_point_2), counter_level)
+            control_point_2 = (reference_row, reference_col)
+            coordinates_of_reference_point_in_area.append(control_point_2)
+            logging.info(f"Reference - {max_value} in {control_point_2}")
 
         elif method == 'linear_image_shift':
-            
-            # Нахождение горизонтального и вертикального сдвигов между изображениями
-            dx = control_point_1[0] - control_point_2[0]
-            dy = control_point_1[1] - control_point_2[1]
+            pass
 
-            # Сдвигаем изображение
-            img2 = np.roll(img2, dx, axis=1)
-            img2 = np.roll(img2, dy, axis=0)
+        # Нахождение горизонтального и вертикального сдвигов между изображениями
+        dx = control_point_1[0] - control_point_2[0]
+        dy = control_point_1[1] - control_point_2[1]
 
-            # Сохранение выравненного изображения
-            fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
-            logging.info(f"Image {i+2}: {file} - saved")
+        # Сдвигаем изображение
+        img2 = np.roll(img2, dx, axis=1)
+        img2 = np.roll(img2, dy, axis=0)
 
-    logprint('Finish program alignment of the solar disk')
+        # Сохранение выравненного изображения
+        fits.writeto(f'{directory}_aligned/{file[:-4]}_aligned.fits', img2, overwrite=True, header=header)
+        logging.info(f"Image {i+2}: {file} - saved")
+
+    Monitoring.logprint('Finish program alignment of the solar disk')
     print('For more details: read file "logs.log"')
-    
-    np.save('setting_of_alignes.npy', coordinates_of_max_point_in_area)
-    print(coordinates_of_max_point_in_area)
+
+    np.save('setting_of_alignes.npy', coordinates_of_reference_point_in_area)
+    print(coordinates_of_reference_point_in_area)
 
     square_psf_list = sorted(square_psf, reverse=True)
     np.savez('psf_square.npz', freqs = freqs, psf_square = square_psf_list)
-    
+
     print(square_psf_list)
 
 ##############################################################

@@ -1,5 +1,6 @@
 import logging
 import os, sys
+from tqdm import tqdm
 import re
 import matplotlib.pyplot as plt
 from matplotlib import ticker
@@ -16,17 +17,20 @@ logging.info(f'Start of the program to search intensity spectrum of a sun')
 
 ############################################
 ##### Values #####
-directories = ["D:/datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T055730_calibrated_brightness_COM_aligned"]
-polynomial_degree = 3
+directories = ["D:/datasets/20.01.22/times/20220120T055530_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T055730_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T055845_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T055945_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T060045_calibrated_brightness_COM_aligned", "D:/datasets/20.01.22/times/20220120T060200_calibrated_brightness_COM_aligned"]
+directories = ['A:/14.05.24_times/20240514T020220']
+polynomial_degree = 2
 # coordinates = (324, 628)
 coordinates = (890, 563)
-coordinates = (881, 566)
+coordinates = (893, 565)
+coordinates = (879, 390)
 ##### Params #####
 running_mean = False
+gs_approx = False
 psf_calibration = False
 background_Zirin_subtraction = False
 intensity_plot = False
-save_graphs = True
+save_graphs = False
 #############################################
 
 if save_graphs:
@@ -38,7 +42,7 @@ psf_square = psf_npz_file['psf_square']
 # psf_square = np.array([11.1460177 ,  9.72418879,  8.5339233 ,  7.57227139,  6.74631268, 6.04867257,  5.46902655,  4.96902655,  4.49115044,  4.12831858, 3.5280236 ,  3.23156342,  3.11651917,  2.99852507,  2.78466077, 2.76548673,  2.59734513,  2.47640118,  2.22713864,  2.01917404, 1.83185841,  1.70943953,  1.55899705,  1.42625369,  1.32300885, 1.21976401,  1.13126844,  1.0560472, 1]) # 16.07.23
 psf_square = np.array([1.75, 1.7, 1.65, 1.6, 1.55, 1.5, 1.45, 1.4, 1.35, 1.3, 1.2, 1.15, 1.1, 1.05, 1])  # 20.01.22 (9800 = 1.25, 10200 = 1.2)
 
-for directory in directories:
+for directory in tqdm(directories):
     logging.info(f'Path to files: {directory}')
     freqs = set()
     files = sorted(os.listdir(directory), key=lambda x: extractor.extract_number(x, freqs))
@@ -50,7 +54,7 @@ for directory in directories:
         if (freqs_npz != freqs).any():
             logging.warning(f"Freqs in npz is not freqs in directory")
             sys.exit()
-            
+
     logging.info(f'Working with freqs: [{ConvertingArrays.arr2str4print(freqs)}]')
 
     intensivity_list_L, intensivity_list_R = [], []
@@ -69,7 +73,7 @@ for directory in directories:
 
         intensivity = FindIntensity.find_intensity_in_nine_point(img, coordinates)
         logging.info(f'{files[image_index]} - {intensivity}')
-        
+
         if r_or_l == 'RCP' or r_or_l == 'R':
             intensivity_list_R.append(intensivity)
         elif r_or_l == 'LCP' or r_or_l == 'L':
@@ -79,7 +83,7 @@ for directory in directories:
 
     if background_Zirin_subtraction == True:
         intensivity_list_L, intensivity_list_R = ConvertingArrays.background_subtraction(intensivity_list_L, intensivity_list_R, freqs)
-        
+
     # Конвертация яркостной температуры в плотность потока
     flux_density_left  = ConvertingArrays.Tb2sfu(intensivity_list_L, freqs)
     flux_density_right = ConvertingArrays.Tb2sfu(intensivity_list_R, freqs)
@@ -91,6 +95,12 @@ for directory in directories:
         flux_density_right = ConvertingArrays.variable_running_mean(flux_density_right)
         logging.info(f'Flux in sfu for LCP with smoothing: [{ConvertingArrays.arr2str4print(flux_density_left)}]')
         logging.info(f'Flux in sfu for RCP with smoothing: [{ConvertingArrays.arr2str4print(flux_density_right)}]')
+
+    if gs_approx:
+        flux_density_left_approx = ConvertingArrays.gs_approximation(flux_density_left, freqs)[0]
+        flux_density_right_approx = ConvertingArrays.gs_approximation(flux_density_right, freqs)[0]
+        logging.info(f'Flux in sfu for LCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_left)}]')
+        logging.info(f'Flux in sfu for RCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_right)}]')
 
     if psf_calibration:
         correction_psf_left = flux_density_left * psf_square
@@ -133,6 +143,8 @@ for directory in directories:
     if psf_calibration == True:
         LR_axs[0].plot(plot_freqs, correction_psf_ya_left, linestyle = '--', zorder = 1)
         LR_axs[0].plot(plot_freqs, correction_psf_left, 'o', label = f"Наблюдаемый спектр\nс поправкой на ширину\nдиаграммы направленности", linewidth = 8, color = 'firebrick', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
+    if gs_approx == True:
+        LR_axs[0].plot(plot_freqs, flux_density_left_approx, linestyle = '--', zorder = 1)
     LR_axs[0].set_title('LCP', fontweight='bold')
     LR_axs[0].set_ylabel('Flux density, $sfu$')
 
@@ -141,6 +153,8 @@ for directory in directories:
     if psf_calibration == True:
         LR_axs[1].plot(plot_freqs, correction_psf_ya_right, linestyle = '--', zorder = 1)
         LR_axs[1].plot(plot_freqs, correction_psf_right, 'o', label = f"Наблюдаемый спектр\nс поправкой на ширину\nдиаграммы направленности", color = 'firebrick', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
+    if gs_approx == True:
+        LR_axs[1].plot(plot_freqs, flux_density_right_approx, linestyle = '--', zorder = 1)
     LR_axs[1].set_title('RCP', fontweight='bold')
     # axs[1].set_ylabel('Flux density, $sfu$')
 
@@ -160,6 +174,9 @@ for directory in directories:
     plt.tight_layout()
     if save_graphs:
         plt.savefig(f'intensity_graph_{extractor.extract_datetime(directories[0])[0:7]}/LCP_RCP_{extractor.extract_datetime(directory)}.png', dpi = 300)
+    else:
+        plt.show()
+    plt.close()
 
     ######## График интенсивности ########
     if intensity_plot:
@@ -184,9 +201,11 @@ for directory in directories:
         I_ax.xaxis.set_minor_locator(ticker.NullLocator())
         I_ax.xaxis.set_ticks(plot_freqs)
         I_ax.set_xticklabels(plot_freqs, rotation=60, ha='right')
-        
         plt.tight_layout()
         if save_graphs:
             plt.savefig(f'intensity_graph_{extractor.extract_datetime(directories[0])[0:7]}/I_{extractor.extract_datetime(directory)}.png', dpi = 300)
-            
-    plt.show()
+        else:
+            plt.show()
+        plt.close()
+
+

@@ -1,30 +1,28 @@
 from astropy.io import fits
 import numpy as np
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.colors import LogNorm, Normalize, TwoSlopeNorm
 import os
 import re
-
+import matplotlib.patches as patches
 import logging
-# logging.basicConfig(filename = 'logs.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', encoding = "UTF-8", datefmt='%d-%b-%y %H:%M:%S')
-logging.basicConfig(filename = 'logs.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+from analise_utils import Monitoring, Extract
+
+Extract = Extract()
+Monitoring.start_log('logs')
 logging.info(f'Start program show of the solar on difference frequency')
 
 # Каталог из которого будем брать файлы
-directory = "D:/datasets/20.01.22/times/20220120T055530_calibrated_brightness_aligned"
-vcenter = 200000
+directory = "D:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_aligned"
+directory = "D:\datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned"
+directory = "A:/14.05.24_times/20240514T020220"
+vcenter = 5000
 
 logging.info(f'Path to files: {directory}')
 
-pattern = re.compile(r'(?<=[_.])\d{4,5}(?=[_.])')
-
-# функция для извлечения цифр из названия файла
-def extract_number(filename):
-    match = pattern.search(filename)
-    return int(match.group())
-
-files = sorted(os.listdir(directory), key=extract_number)
+files = sorted(os.listdir(directory), key=lambda x: Extract.extract_number(x))
 logging.info(f'Search {len(files)} files')
 logging.info(f'Files: \n {files}')
 
@@ -39,32 +37,57 @@ np.set_printoptions(threshold=np.inf)
 # получение границ кропа через срезы из строк и каждой строки
 # stroka_1, stroka_2, stolbec_1, stolbec_2 = 615, 640, 315, 335
 stroka_1, stroka_2, stolbec_1, stolbec_2 = 0, 1024, 0, 1024
-    
-def multiple_crope_images_display(input_matrix_list_files, NX=8, NY=4):
+# stroka_1, stroka_2, stolbec_1, stolbec_2 = 543, 583, 873, 913
+
+def multiple_crope_images_display(input_matrix_list_files, NX=12, NY=7):
     # https://teletype.in/@pythontalk/matplotlib_subplot_tutorial
     fig, axs = plt.subplots(NY, NX, sharex=True, sharey=True, figsize=(NX*3,NY*3))
 
-    for i in range(0, len(files)):
-        vcenter = - 1500 * (i + 1) + 118000
+    for i in tqdm(range(0, len(files))):
+        vcenter = - 1500 * (i + 1) + 200000
         # print(input_matrix_list_files[i])
         fits_image_file = fits.open(f'{directory}/{input_matrix_list_files[i]}', ignore_missing_simple=True)[0].data
+        image_slice = (fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2]
+
         ax = axs[i//NX, i%NX]
         freq = re.search(r'(?<=[_.])\d{4,5}(?=[_.])', str(input_matrix_list_files[i])).group()
         i_or_v = re.search(r'[I|V]', str(input_matrix_list_files[i]))
         r_or_l = re.search(r'(RCP|LCP|R|L)', str(input_matrix_list_files[i]))
         # print(f'рисую в клетке {i+1}')
         # ax.imshow((fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2], origin='lower', cmap='plasma', interpolation='gaussian')
-        ax.imshow((fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2], origin='lower', cmap='plasma', norm=TwoSlopeNorm(vmin=5000, vcenter=vcenter), extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]])
-        
+        ax.imshow((fits_image_file)[0:1024, 0:1024], origin='lower', cmap='plasma', norm=TwoSlopeNorm(vmin=0, vcenter=vcenter, vmax=200000), extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]])
+
+
+        # Создание контуров только для определенной части изображения
+        x, y  = range(stolbec_1, stolbec_2), range(stroka_1, stroka_2)
+        contour = ax.contour(x, y, image_slice, colors='lime', levels=[image_slice.max()*0.2 - 1, image_slice.max()*0.5 - 1, image_slice.max()*0.7 - 1, image_slice.max()*0.9 - 1])
+        # минус 1 т.к. для прямоугольника координаты это левый нижний угол а не центр
+        rectangle1 = patches.Rectangle((885-1, 578-1), 3, 3, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+        rectangle2 = patches.Rectangle((890-1, 551-1), 3, 3, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+        rectangle3 = patches.Rectangle((880-1, 564-1), 3, 3, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+        rectangle4 = patches.Rectangle((893-1, 565-1), 3, 3, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+        ax.add_patch(rectangle1)
+        ax.add_patch(rectangle2)
+        ax.add_patch(rectangle3)
+        ax.add_patch(rectangle4)
+        for line in contour.collections:
+            line.set_linewidth(1.2)  # Увеличение толщины контура
+            line.set_antialiased(True)  # Сглаживание контуров
+
         # ax.plot(653, 614, '+', markersize=25, color = 'k')
         # ax.plot(324, 628, 'x', markersize=15, color = 'k')
-        
+
         ax.plot(890, 563, 'x', markersize=15, color = 'k')
+        # ax.plot(888, 572, '+', markersize=15, color = 'k')
+        # ax.plot(891, 555, '+', markersize=15, color = 'k')
+        # ax.plot(885, 563, '+', markersize=15, color = 'k')
+        # ax.plot(893, 563, '+', markersize=15, color = 'k')
+        # ax.grid(which='both', color='black', linestyle='-', linewidth=0.1)
         # circle = Circle((512, 512), 425, color='white', fill=False)
         # ax.add_artist(circle)
         ax.set_title(f'Freq {freq}, {r_or_l.group()}' if r_or_l else f'Freq {freq}, Stoks {i_or_v.group()}')
-        ax.axis('off') 
-    
+        ax.axis('off')
+
     fig.tight_layout()
     # Получение менеджера окна
     manager = plt.get_current_fig_manager()

@@ -2,12 +2,9 @@ import os
 import shutil
 from datetime import datetime
 
-# source_folder = "D:/16.07.23 point clean"
-# target_time = "20230716T082420"
-
-source_folder = "D:/datasets/20.01.22/fix_table"
-target_time = "20220120T055430"
-destination_folder = f"D:/datasets/20.01.22/times/{target_time}"
+source_folder = "A:/14.05.24_calibrated_brightness_WA_aligned"
+target_time = "20240514T020220"
+destination_folder = f"A:/14.05.24_times/{target_time}"
 
 # Определяем место для сохранения
 try:
@@ -31,9 +28,9 @@ def find_nearest_files(src_folder, target_time, dest_folder):
 
             if time_difference <= min_difference:
                 min_difference = time_difference
-                if file.endswith("_LCP.fit"):
+                if file.endswith("_LCP.fits") or file.endswith("LCP_calibrated_brightness_WA_aligned.fits") or file.endswith("LCP_calibrated_brightness.fits"):
                     lcp_nearest_file = os.path.join(root, file)
-                elif file.endswith("_RCP.fit"):
+                elif file.endswith("_RCP.fits") or file.endswith("RCP_calibrated_brightness_WA_aligned.fits") or file.endswith("RCP_calibrated_brightness.fits"):
                     rcp_nearest_file = os.path.join(root, file)
 
         if lcp_nearest_file:
