@@ -1,17 +1,16 @@
 import os
 import shutil
 from datetime import datetime
+from tqdm import tqdm
+from analise_utils import OsOperations, Extract
 
-source_folder = "A:/14.05.24_calibrated_brightness_WA_aligned"
-target_time = "20240514T020220"
-destination_folder = f"A:/14.05.24_times/{target_time}"
+extract = Extract()
 
-# Определяем место для сохранения
-try:
-    os.mkdir(destination_folder)
-except:
-    shutil.rmtree(destination_folder)
-    os.mkdir(destination_folder)
+source_folder = "E:/testdataset"
+target_time = "20240514T020138"
+destination_folder = f"{source_folder}_times/{target_time}"
+
+OsOperations.create_place(destination_folder)
 
 def find_nearest_files(src_folder, target_time, dest_folder):
     target_time = datetime.strptime(target_time, "%Y%m%dT%H%M%S")
@@ -28,17 +27,17 @@ def find_nearest_files(src_folder, target_time, dest_folder):
 
             if time_difference <= min_difference:
                 min_difference = time_difference
-                if file.endswith("_LCP.fits") or file.endswith("LCP_calibrated_brightness_WA_aligned.fits") or file.endswith("LCP_calibrated_brightness.fits"):
+                if extract.extract_polarization(file) == "LCP":
                     lcp_nearest_file = os.path.join(root, file)
-                elif file.endswith("_RCP.fits") or file.endswith("RCP_calibrated_brightness_WA_aligned.fits") or file.endswith("RCP_calibrated_brightness.fits"):
+                elif extract.extract_polarization(file) == "RCP":
                     rcp_nearest_file = os.path.join(root, file)
 
         if lcp_nearest_file:
-            print(lcp_nearest_file)
             shutil.copy(lcp_nearest_file, dest_folder)
+            print(f'Файл {lcp_nearest_file} перемещен')
         if rcp_nearest_file:
-            print(rcp_nearest_file)
             shutil.copy(rcp_nearest_file, dest_folder)
+            print(f'Файл {rcp_nearest_file} перемещен')
 
 if __name__ == "__main__":
     find_nearest_files(source_folder, target_time, destination_folder)

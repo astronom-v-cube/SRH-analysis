@@ -44,6 +44,21 @@ class Extract:
         """
         match = self.datetime_pattern.search(filename)
         return match.group()
+    
+    def extract_polarization(self, filename: str) -> str:
+        """Функция для извлечения поляризации из названия файла
+
+        Args:
+            filename (str): название ```.fits``` файла с данными
+
+        Returns:
+            str: выделенная поляризация (RCP, LCP, R, L)
+        """
+        match = self.polarization_pattern.search(filename)
+        if match:
+            return match.group()
+        else:
+            raise ValueError(f"Поляризация не найдена в названии файла: {filename}")
 
 class ZirinTb:
 # Zirin H. et al.
@@ -430,18 +445,26 @@ class OsOperations:
 
     @staticmethod
     def create_place(path: str, postfix: str = ''):
-        """Создает папку с указанным путем, если она уже существует - удаляет ее и создает заново. Вторым агрументом можно передать постфикс для пути
+        """Создает папку с указанным путем, если она уже существует - удаляет ее и создает заново. 
+        Вторым аргументом можно передать постфикс для пути
 
         Args:
             path (str): путь к месту расположения
-            postfix (str, optional): постфикс для пути, отделяется от пути нижнем подчеркиванием ```_```. По умолчанию пустая строка: ''
+            postfix (str, optional): постфикс для пути, отделяется от пути нижним подчеркиванием ```_```. По умолчанию пустая строка: ''
         """
         new_path = f'{path}_{postfix}' if postfix else path
         try:
             os.mkdir(new_path)
+        except FileNotFoundError:
+            os.makedirs(os.path.dirname(new_path), exist_ok=True)
+            os.mkdir(new_path)
         except FileExistsError:
             shutil.rmtree(new_path)
             os.mkdir(new_path)
+
+# Пример использования
+# Utility.create_place('some/intermediate/path', 'postfix')
+
 
     @staticmethod
     def abс_sorted_files_in_folder(path_to_folder) -> List[str]:
