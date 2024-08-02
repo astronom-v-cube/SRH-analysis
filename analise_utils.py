@@ -44,7 +44,7 @@ class Extract:
         """
         match = self.datetime_pattern.search(filename)
         return match.group()
-    
+
     def extract_polarization(self, filename: str) -> str:
         """Функция для извлечения поляризации из названия файла
 
@@ -445,7 +445,7 @@ class OsOperations:
 
     @staticmethod
     def create_place(path: str, postfix: str = ''):
-        """Создает папку с указанным путем, если она уже существует - удаляет ее и создает заново. 
+        """Создает папку с указанным путем, если она уже существует - удаляет ее и создает заново.
         Вторым аргументом можно передать постфикс для пути
 
         Args:
@@ -519,3 +519,11 @@ class OsOperations:
         files = sorted(list_of_1st_two_files, key=lambda x: extract.extract_number(x, freqs))
         freqs = sorted(list(freqs))
         return files, freqs
+
+class Properties():
+
+    @staticmethod
+    def init_customization():
+
+        # отображение всех значений матрицы в консоль
+        np.set_printoptions(threshold=np.inf)
