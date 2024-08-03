@@ -19,9 +19,9 @@ logging.info(f'Start program show time profile on difference frequency')
 directory = "E:/testdataset"
 folder_mode = 'folder_with_folders'    # 'one_folder' /one_time_moment/ or 'folder_with_folders' /many__time_moment/
 ### TO DO
-mode = 'from_point'     # 'from_point' or 'from_box'
-###TO DO
+mode = 'from_box'     # 'from_point' or 'from_box'
 point = [512, 512]
+stroka_1, stroka_2, stolbec_1, stolbec_2 = 360, 420, 870, 905
 
 files, freqs = OsOperations.freq_sorted_1st_two_files_in_folders(directory)
 colors = plt.cm.jet(np.linspace(0, 1, len(freqs)))
@@ -36,14 +36,19 @@ def multiple_crope_images_display(freqs):
     for freq in tqdm(freqs):
         files_on_freq_folder = OsOperations.abс_sorted_files_in_folder(f'{directory}/{freq}')
         list_of_tb_value_on_freq = []
-        if mode == 'from_point':
-            for index in range(0, len(files_on_freq_folder), 2):
-                hdul1 = fits.open(f'{directory}/{freq}/{files_on_freq_folder[index]}', ignore_missing_simple=True)
-                hdul2 = fits.open(f'{directory}/{freq}/{files_on_freq_folder[index+1]}', ignore_missing_simple=True)
-                data1 = hdul1[0].data
-                data2 = hdul2[0].data
-                I = data1 + data2
+        for index in range(0, len(files_on_freq_folder), 2):
+            hdul1 = fits.open(f'{directory}/{freq}/{files_on_freq_folder[index]}', ignore_missing_simple=True)
+            hdul2 = fits.open(f'{directory}/{freq}/{files_on_freq_folder[index+1]}', ignore_missing_simple=True)
+            data1 = hdul1[0].data
+            data2 = hdul2[0].data
+            I = data1 + data2
+            if mode == 'from_box':
+                image_slice = I[stroka_1:stroka_2, stolbec_1:stolbec_2]
+                image_slice = image_slice.sum()
+                list_of_tb_value_on_freq.append(image_slice)
+            elif mode == 'from_point':
                 list_of_tb_value_on_freq.append(I[point[0], point[1]])
+
         list_of_tb_value.append(list_of_tb_value_on_freq)
 
     fig_I = plt.figure(num="Intensity time profile", figsize=(10, 7))
