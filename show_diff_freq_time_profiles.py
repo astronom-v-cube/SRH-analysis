@@ -35,11 +35,11 @@ def multiple_crope_images_display(freqs):
     list_of_tb_value = []
     list_of_time = []
 
-    for freq in tqdm(freqs):
+    for freq in tqdm(freqs, desc='Анализ частот', leave=False):
         files_on_freq_folder = OsOperations.abс_sorted_files_in_folder(f'{directory}/{freq}')
         list_of_tb_value_on_freq = []
         list_of_time_obs_on_freq = []
-        for index in range(0, len(files_on_freq_folder), 2):
+        for index in tqdm(range(0, len(files_on_freq_folder), 2), desc='Анализ файлов', leave=False):
             hdul1 = fits.open(f'{directory}/{freq}/{files_on_freq_folder[index]}', ignore_missing_simple=True)
             hdul2 = fits.open(f'{directory}/{freq}/{files_on_freq_folder[index+1]}', ignore_missing_simple=True)
             time_obs = hdul1[0].header['T-OBS']
@@ -65,8 +65,9 @@ def multiple_crope_images_display(freqs):
     V_ax = fig_V.gca()
 
     for index, time_profile in enumerate(list_of_tb_value):
-        I_ax.plot(list_of_time[index], time_profile, label=f'{freqs[index]}', color=colors[index])
-        I_ax.legend(bbox_to_anchor=(1.3, 1), loc="upper right")
+        I_ax.scatter(list_of_time[index], time_profile, label=f'{freqs[index]}', color=colors[index])
+        # I_ax.legend(bbox_to_anchor=(1.3, 1), loc="upper right")
+    I_ax.legend(ncols=8)
     I_ax.set_yscale('log')
     fig_I.tight_layout()
 
