@@ -51,8 +51,8 @@ def multiple_crope_images_display(freqs):
             if mode == 'from_box':
                 image_slice_I = I[stroka_1:stroka_2, stolbec_1:stolbec_2]
                 image_slice_V = V[stroka_1:stroka_2, stolbec_1:stolbec_2]
-                image_slice_I = image_slice_I.sum()
-                image_slice_V = image_slice_V.sum()
+                image_slice_I = image_slice_I[image_slice_I >= 0].sum()
+                image_slice_V = image_slice_V[image_slice_V >= 0].sum()
                 list_of_I_tb_value_on_freq.append(image_slice_I)
                 list_of_V_tb_value_on_freq.append(image_slice_V)
             elif mode == 'from_point':
@@ -75,11 +75,10 @@ def multiple_crope_images_display(freqs):
     for index, time_profile in enumerate(list_of_V_tb_value):
         V_ax.scatter(list_of_time[index], time_profile, label=f'{freqs[index]}', color=colors[index])
     # I_ax.legend(bbox_to_anchor=(1.3, 1), loc="upper right")
-    I_ax.legend(ncols=8)
+    I_ax.legend(ncols=8, fontsize=12)
     I_ax.set_yscale('log')
     fig_I.tight_layout()
 
     plt.show()
-
 
 multiple_crope_images_display(freqs)

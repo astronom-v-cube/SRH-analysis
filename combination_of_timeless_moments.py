@@ -2,13 +2,14 @@ import os
 import shutil
 from datetime import datetime
 from tqdm import tqdm
+
 from analise_utils import OsOperations, Extract
+from config import directory
 
 extract = Extract()
 
-source_folder = "E:/testdataset"
 target_time = "20240514T020138"
-destination_folder = f"{source_folder}_times/{target_time}"
+destination_folder = f"{directory}_times/{target_time}"
 
 OsOperations.create_place(destination_folder)
 
@@ -40,4 +41,4 @@ def find_nearest_files(src_folder, target_time, dest_folder):
             print(f'Файл {rcp_nearest_file} перемещен')
 
 if __name__ == "__main__":
-    find_nearest_files(source_folder, target_time, destination_folder)
+    find_nearest_files(directory, target_time, destination_folder)

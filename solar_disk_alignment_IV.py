@@ -4,7 +4,7 @@ from matplotlib.widgets import Slider
 import matplotlib.colors as colors
 import numpy as np
 from astropy.io import fits
-import os, sys
+import sys
 import logging
 from tqdm import tqdm
 from analise_utils import ArrayOperations, Extract, Monitoring, OsOperations
