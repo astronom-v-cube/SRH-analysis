@@ -1,4 +1,5 @@
 # use ```python -m pip install -r requirements.txt```
+# so on https://pip.pypa.io/en/stable/user_guide/#requirements-files
 
 scipy
 matplotlib
