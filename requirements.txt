@@ -2,3 +2,6 @@ scipy
 matplotlib
 numpy
 tqdm
+astropy
+sunpy
+xrtpy
