@@ -1,23 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, minimum-scale=1" name="viewport"/>
+<meta content="pdoc3 0.11.1" name="generator"/>
 <title>analise_utils API documentation</title>
-<meta name="description" content="">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<meta content="" name="description"/>
+<link crossorigin="" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" rel="stylesheet"/>
+<link crossorigin="" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" rel="stylesheet"/>
+<link crossorigin="" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" rel="stylesheet"/>
 <style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script crossorigin="" defer="" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
 })</script>
-</head>
+<link href="favicon.ico" rel="icon"/></head>
 <body>
 <main>
 <article id="content">
@@ -48,7 +49,7 @@ hljs.highlightAll();
 
     @staticmethod
     def find_max_around_point(matrix : np.ndarray, point : tuple, size : int) -&gt; tuple:
-        &#34;&#34;&#34;Функция выполняет поиск максимального значения в матрице определенного размера вокруг заданной точки.
+        """Функция выполняет поиск максимального значения в матрице определенного размера вокруг заданной точки.
 
         Args:
             matrix (np.ndarray):  матрица (двумерный массив) - изображение
@@ -57,7 +58,7 @@ hljs.highlightAll();
 
         Returns:
             tuple: кортеж из трех значений: строкa ```max_row``` и столбец ```max_col``` максимального значения, а также значение ```max_value``` самого большого элемента в указанной области.
-        &#34;&#34;&#34;
+        """
         # Get the indices of the smaller region around the point
         row, col = point
         half_size = size // 2
@@ -79,7 +80,7 @@ hljs.highlightAll();
 
     @staticmethod
     def find_center_of_mass(matrix: np.ndarray, point: tuple, size: int) -&gt; tuple:
-        &#34;&#34;&#34;Функция выполняет поиск центра тяжести области методом взвешенного среднего. Функция вычисляет матрицу меньшего размера вокруг указанной точки и находит максимальное значение в этой области. Затем она устанавливает пороговое значение как фракцию максимального значения и находит индексы элементов матрицы, которые превышают этот порог. Если ни один элемент не превышает порог, центр тяжести вычисляется как центр области. В противном случае, используются индексы элементов, превышающих порог, для вычисления центра тяжести методом среднего.
+        """Функция выполняет поиск центра тяжести области методом взвешенного среднего. Функция вычисляет матрицу меньшего размера вокруг указанной точки и находит максимальное значение в этой области. Затем она устанавливает пороговое значение как фракцию максимального значения и находит индексы элементов матрицы, которые превышают этот порог. Если ни один элемент не превышает порог, центр тяжести вычисляется как центр области. В противном случае, используются индексы элементов, превышающих порог, для вычисления центра тяжести методом среднего.
 
         Args:
             matrix (np.ndarray):  матрица (двумерный массив)
@@ -88,7 +89,7 @@ hljs.highlightAll();
 
         Returns:
             tuple: кортеж из двух значений: строка ```center_row``` и столбец ```center_col``` координат центра тяжести, определенного по элементам матрицы в указанной области, а также значение ```max_value``` самого большого элемента в указанной области
-        &#34;&#34;&#34;
+        """
         # Get the indices of the smaller region around the point
         row, col = point
         half_size = size // 2
@@ -118,7 +119,7 @@ hljs.highlightAll();
 
     @staticmethod
     def calculate_weighted_centroid(matrix: np.ndarray, point: tuple, target_level: float, xy_limits : tuple = None) -&gt; tuple:
-        &#34;&#34;&#34;Функция выполняет вычисление средневзвешенного значения координат внутри контура вокруг заданной точки. Внимание! Контур всегда должен быть полностью отображен в области поиска!
+        """Функция выполняет вычисление средневзвешенного значения координат внутри контура вокруг заданной точки. Внимание! Контур всегда должен быть полностью отображен в области поиска!
 
         Args:
             matrix (np.ndarray): матрица (двумерный массив) - изображение
@@ -131,7 +132,7 @@ hljs.highlightAll();
 
         Raises:
             ValueError: если точка не находится внутри контура.
-        &#34;&#34;&#34;
+        """
         if xy_limits != None:
             crop_matrix = matrix[xy_limits[1][0]:xy_limits[1][1], xy_limits[0][0]:xy_limits[0][1]]
         else:
@@ -151,7 +152,7 @@ hljs.highlightAll();
                     break
 
         if not point_in_contour:
-            raise ValueError(f&#34;Точка не находится внутри контура уровня {target_level}&#34;)
+            raise ValueError(f"Точка не находится внутри контура уровня {target_level}")
 
         # Создание сетки координат
         y, x = np.mgrid[:matrix.shape[0], :matrix.shape[1]]
@@ -173,19 +174,19 @@ hljs.highlightAll();
 <h3>Static methods</h3>
 <dl>
 <dt id="analise_utils.ArrayOperations.calculate_weighted_centroid"><code class="name flex">
-<span>def <span class="ident">calculate_weighted_centroid</span></span>(<span>matrix: numpy.ndarray, point: tuple, target_level: float, xy_limits: tuple = None) ‑> tuple</span>
+<span>def <span class="ident">calculate_weighted_centroid</span></span>(<span>matrix: numpy.ndarray, point: tuple, target_level: float, xy_limits: tuple = None) ‑&gt; tuple</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция выполняет вычисление средневзвешенного значения координат внутри контура вокруг заданной точки. Внимание! Контур всегда должен быть полностью отображен в области поиска!</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>matrix</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>matrix</code></strong> : <code>np.ndarray</code></dt>
 <dd>матрица (двумерный массив) - изображение</dd>
-<dt><strong><code>point</code></strong> :&ensp;<code>tuple</code></dt>
+<dt><strong><code>point</code></strong> : <code>tuple</code></dt>
 <dd>указанная точка - координаты</dd>
-<dt><strong><code>level</code></strong> :&ensp;<code>float</code></dt>
+<dt><strong><code>level</code></strong> : <code>float</code></dt>
 <dd>уровень контура</dd>
-<dt><strong><code>xy_limits</code></strong> :&ensp;<code>turple</code></dt>
+<dt><strong><code>xy_limits</code></strong> : <code>turple</code></dt>
 <dd>область поиска контура (по умолчанию - все изображение)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -200,17 +201,17 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.ArrayOperations.find_center_of_mass"><code class="name flex">
-<span>def <span class="ident">find_center_of_mass</span></span>(<span>matrix: numpy.ndarray, point: tuple, size: int) ‑> tuple</span>
+<span>def <span class="ident">find_center_of_mass</span></span>(<span>matrix: numpy.ndarray, point: tuple, size: int) ‑&gt; tuple</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция выполняет поиск центра тяжести области методом взвешенного среднего. Функция вычисляет матрицу меньшего размера вокруг указанной точки и находит максимальное значение в этой области. Затем она устанавливает пороговое значение как фракцию максимального значения и находит индексы элементов матрицы, которые превышают этот порог. Если ни один элемент не превышает порог, центр тяжести вычисляется как центр области. В противном случае, используются индексы элементов, превышающих порог, для вычисления центра тяжести методом среднего.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>matrix</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>matrix</code></strong> : <code>np.ndarray</code></dt>
 <dd>матрица (двумерный массив)</dd>
-<dt><strong><code>point</code></strong> :&ensp;<code>tuple</code></dt>
+<dt><strong><code>point</code></strong> : <code>tuple</code></dt>
 <dd>указанная точка - координаты</dd>
-<dt><strong><code>size</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>size</code></strong> : <code>int</code></dt>
 <dd>размер области поиска</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -220,17 +221,17 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.ArrayOperations.find_max_around_point"><code class="name flex">
-<span>def <span class="ident">find_max_around_point</span></span>(<span>matrix: numpy.ndarray, point: tuple, size: int) ‑> tuple</span>
+<span>def <span class="ident">find_max_around_point</span></span>(<span>matrix: numpy.ndarray, point: tuple, size: int) ‑&gt; tuple</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция выполняет поиск максимального значения в матрице определенного размера вокруг заданной точки.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>matrix</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>matrix</code></strong> : <code>np.ndarray</code></dt>
 <dd>матрица (двумерный массив) - изображение</dd>
-<dt><strong><code>point</code></strong> :&ensp;<code>tuple</code></dt>
+<dt><strong><code>point</code></strong> : <code>tuple</code></dt>
 <dd>указанная точка - координаты</dd>
-<dt><strong><code>size</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>size</code></strong> : <code>int</code></dt>
 <dd>размер области поиска</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -245,54 +246,54 @@ hljs.highlightAll();
 <span>class <span class="ident">ConvertingArrays</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Преобразования массивов - сглаживание, аппроксимация, вычет подложки, пересчет в другую систему единиц, преобразвание в принт-строку, &hellip;</p></div>
+<div class="desc"><p>Преобразования массивов - сглаживание, аппроксимация, вычет подложки, пересчет в другую систему единиц, преобразвание в принт-строку, …</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ConvertingArrays:
-    &#34;&#34;&#34;
+    """
     Преобразования массивов - сглаживание, аппроксимация, вычет подложки, пересчет в другую систему единиц, преобразвание в принт-строку, ...
-    &#34;&#34;&#34;
+    """
     @staticmethod
     def arr2str4print(arr: Union[np.ndarray, List]) -&gt; str:
-        &#34;&#34;&#34;Преобразование массива чисел в принт-строку
+        """Преобразование массива чисел в принт-строку
 
         Args:
             arr (ndarray): массив чисел
 
         Returns:
             str: строка в удобном для вывода / логирования виде
-        &#34;&#34;&#34;
-        return &#34;, &#34;.join(arr.astype(str))
+        """
+        return ", ".join(arr.astype(str))
 
     # def arr2str4print(arr):
-    # return np.array2string(arr, separator=&#39;, &#39;, formatter={&#39;float_kind&#39;: lambda x: &#34;%.2f&#34; % x})
+    # return np.array2string(arr, separator=', ', formatter={'float_kind': lambda x: "%.2f" % x})
 
     @staticmethod
     def running_mean(data: np.ndarray, window_size: int) -&gt; np.ndarray:
-        &#34;&#34;&#34;Сглаживание массива скользящим усредняющим окном в указанное число элементов
+        """Сглаживание массива скользящим усредняющим окном в указанное число элементов
 
         Args:
             array (np.ndarray): исходный массив
 
         Returns:
             np.ndarray: сглаженный массив
-        &#34;&#34;&#34;
+        """
         window = np.ones(window_size) / window_size
-        smoothed_data = np.convolve(data, window, mode=&#39;same&#39;)
+        smoothed_data = np.convolve(data, window, mode='same')
         return smoothed_data
 
     @staticmethod
     def variable_running_mean(array: np.ndarray) -&gt; np.ndarray:
-        &#34;&#34;&#34;Сглаживание массива скользящим усредняющим окном от 1 до 3 элементов (&#34;окно&#34; для вычисления среднего значения фактически изменяется в зависимости от позиции текущего элемента данных, для крайних значений данных используется среднее значение только из соседних элементов)
+        """Сглаживание массива скользящим усредняющим окном от 1 до 3 элементов ("окно" для вычисления среднего значения фактически изменяется в зависимости от позиции текущего элемента данных, для крайних значений данных используется среднее значение только из соседних элементов)
 
         Args:
             array (np.ndarray): исходный массив
 
         Returns:
             np.ndarray: сглаженный массив
-        &#34;&#34;&#34;
+        """
         smoothed_data = []
         for i in range(len(array)):
             if i == 0:
@@ -306,7 +307,7 @@ hljs.highlightAll();
 
     @staticmethod
     def gs_approximation(array_sfu : np.ndarray, array_freqs : np.ndarray) -&gt; tuple[np.ndarray, np.ndarray]:
-        &#34;&#34;&#34;Аппроксимация массива уравнением, описывающим спектр гиросинхротронного излучения (Peak Frequency Dynamics in Solar Microwave Bursts, 2008). На выходе первый[0] элемент - аппроксимированный массив, второй[1] - список восстановленных параметров уравнения: [a1, a2, a3, a4]
+        """Аппроксимация массива уравнением, описывающим спектр гиросинхротронного излучения (Peak Frequency Dynamics in Solar Microwave Bursts, 2008). На выходе первый[0] элемент - аппроксимированный массив, второй[1] - список восстановленных параметров уравнения: [a1, a2, a3, a4]
 
         Args:
             array_sfu (np.ndarray): исходный массив интенсивностей
@@ -315,19 +316,19 @@ hljs.highlightAll();
         Returns:
             np.ndarray: аппроксимированный массив
             np.ndarray: восстановленные параметры уравнения
-        &#34;&#34;&#34;
+        """
 
         def spectrum_function(array_freqs, a1, a2, a3, a4):
             return a1 * array_freqs**a2 * (1 - np.exp(-a3 * array_freqs**-a4))
         popt, pcov = curve_fit(spectrum_function, array_freqs, array_sfu)
         a1, a2, a3, a4 = popt
-        print(f&#39;Coeff: a1, a2, a3, a4 = {a1, a2, a3, a4}&#39;)
+        print(f'Coeff: a1, a2, a3, a4 = {a1, a2, a3, a4}')
         approximation_arr = spectrum_function(array_freqs, *popt)
         return ((approximation_arr, np.array([a1, a2, a3, a4])))
 
     @staticmethod
     def background_subtraction(arr_left_flux: np.ndarray, arr_right_flux: np.ndarray, arr_freqs: np.ndarray):
-        &#34;&#34;&#34;Вычет подложки из области вспышки по интерполированной функции Zirin at el. Функция возвращает исходные массивы преобразованными
+        """Вычет подложки из области вспышки по интерполированной функции Zirin at el. Функция возвращает исходные массивы преобразованными
 
         Args:
             arr_left_flux (ndarray): массив данных левополяризованного излучения
@@ -336,18 +337,18 @@ hljs.highlightAll();
 
         Returns:
             ndarray: 2 преобразованных массива
-        &#34;&#34;&#34;
+        """
         zirin = ZirinTb()
         for index, freq in enumerate(arr_freqs):
             arr_left_flux[index]  = (arr_left_flux[index]  - zirin.getTbAtFrequency(freq/1000))
             arr_right_flux[index] = (arr_right_flux[index] - zirin.getTbAtFrequency(freq/1000))
-        logging.info(f&#39;Flux in sfu for LCP minus solar disk flux: [{ConvertingArrays.arr2str4print(arr_left_flux)}]&#39;)
-        logging.info(f&#39;Flux in sfu for RCP minus solar disk flux: [{ConvertingArrays.arr2str4print(arr_right_flux)}]&#39;)
+        logging.info(f'Flux in sfu for LCP minus solar disk flux: [{ConvertingArrays.arr2str4print(arr_left_flux)}]')
+        logging.info(f'Flux in sfu for RCP minus solar disk flux: [{ConvertingArrays.arr2str4print(arr_right_flux)}]')
         return arr_left_flux, arr_right_flux
 
     @staticmethod
     def Tb2sfu(arr_one_polarization: Union[np.ndarray, List], arr_freqs: Union[np.ndarray, List]) -&gt; np.ndarray:
-        &#34;&#34;&#34;Функция пересчета яркостной температуры в плотность солнечного потока ```sfu```
+        """Функция пересчета яркостной температуры в плотность солнечного потока ```sfu```
 
         Args:
             arr_one_polarization (Union[np.ndarray, List]): массив одной из поляризаций (левая/правая)
@@ -355,21 +356,21 @@ hljs.highlightAll();
 
         Returns:
             np.ndarray: преобразованный массив
-        &#34;&#34;&#34;
+        """
         return (((2 * 1.38*1e-16 * (np.array(arr_freqs) * 1e6) ** 2) / (3e10)**2) * np.array(arr_one_polarization) * ((2.4/3600*0.01745)**2) * 1e19)</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
 <dt id="analise_utils.ConvertingArrays.Tb2sfu"><code class="name flex">
-<span>def <span class="ident">Tb2sfu</span></span>(<span>arr_one_polarization: Union[numpy.ndarray, List], arr_freqs: Union[numpy.ndarray, List]) ‑> numpy.ndarray</span>
+<span>def <span class="ident">Tb2sfu</span></span>(<span>arr_one_polarization: Union[numpy.ndarray, List], arr_freqs: Union[numpy.ndarray, List]) ‑&gt; numpy.ndarray</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция пересчета яркостной температуры в плотность солнечного потока <code>sfu</code></p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>arr_one_polarization</code></strong> :&ensp;<code>Union[np.ndarray, List]</code></dt>
+<dt><strong><code>arr_one_polarization</code></strong> : <code>Union[np.ndarray, List]</code></dt>
 <dd>массив одной из поляризаций (левая/правая)</dd>
-<dt><strong><code>arr_freqs</code></strong> :&ensp;<code>Union[np.ndarray, List]</code></dt>
+<dt><strong><code>arr_freqs</code></strong> : <code>Union[np.ndarray, List]</code></dt>
 <dd>массив частот наблюдений</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -379,13 +380,13 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.ConvertingArrays.arr2str4print"><code class="name flex">
-<span>def <span class="ident">arr2str4print</span></span>(<span>arr: Union[numpy.ndarray, List]) ‑> str</span>
+<span>def <span class="ident">arr2str4print</span></span>(<span>arr: Union[numpy.ndarray, List]) ‑&gt; str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Преобразование массива чисел в принт-строку</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>arr</code></strong> :&ensp;<code>ndarray</code></dt>
+<dt><strong><code>arr</code></strong> : <code>ndarray</code></dt>
 <dd>массив чисел</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -401,11 +402,11 @@ hljs.highlightAll();
 <div class="desc"><p>Вычет подложки из области вспышки по интерполированной функции Zirin at el. Функция возвращает исходные массивы преобразованными</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>arr_left_flux</code></strong> :&ensp;<code>ndarray</code></dt>
+<dt><strong><code>arr_left_flux</code></strong> : <code>ndarray</code></dt>
 <dd>массив данных левополяризованного излучения</dd>
-<dt><strong><code>arr_right_flux</code></strong> :&ensp;<code>ndarray</code></dt>
+<dt><strong><code>arr_right_flux</code></strong> : <code>ndarray</code></dt>
 <dd>массив данных правополяризованного излучения</dd>
-<dt><strong><code>arr_freqs</code></strong> :&ensp;<code>ndarray</code></dt>
+<dt><strong><code>arr_freqs</code></strong> : <code>ndarray</code></dt>
 <dd>массив частот наблюдений</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -415,15 +416,15 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.ConvertingArrays.gs_approximation"><code class="name flex">
-<span>def <span class="ident">gs_approximation</span></span>(<span>array_sfu: numpy.ndarray, array_freqs: numpy.ndarray) ‑> tuple[numpy.ndarray, numpy.ndarray]</span>
+<span>def <span class="ident">gs_approximation</span></span>(<span>array_sfu: numpy.ndarray, array_freqs: numpy.ndarray) ‑&gt; tuple[numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Аппроксимация массива уравнением, описывающим спектр гиросинхротронного излучения (Peak Frequency Dynamics in Solar Microwave Bursts, 2008). На выходе первый[0] элемент - аппроксимированный массив, второй[1] - список восстановленных параметров уравнения: [a1, a2, a3, a4]</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>array_sfu</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>array_sfu</code></strong> : <code>np.ndarray</code></dt>
 <dd>исходный массив интенсивностей</dd>
-<dt><strong><code>array_freqs</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>array_freqs</code></strong> : <code>np.ndarray</code></dt>
 <dd>исходный массив частот</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -435,13 +436,13 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.ConvertingArrays.running_mean"><code class="name flex">
-<span>def <span class="ident">running_mean</span></span>(<span>data: numpy.ndarray, window_size: int) ‑> numpy.ndarray</span>
+<span>def <span class="ident">running_mean</span></span>(<span>data: numpy.ndarray, window_size: int) ‑&gt; numpy.ndarray</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Сглаживание массива скользящим усредняющим окном в указанное число элементов</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>array</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>array</code></strong> : <code>np.ndarray</code></dt>
 <dd>исходный массив</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -451,13 +452,13 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.ConvertingArrays.variable_running_mean"><code class="name flex">
-<span>def <span class="ident">variable_running_mean</span></span>(<span>array: numpy.ndarray) ‑> numpy.ndarray</span>
+<span>def <span class="ident">variable_running_mean</span></span>(<span>array: numpy.ndarray) ‑&gt; numpy.ndarray</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Сглаживание массива скользящим усредняющим окном от 1 до 3 элементов ("окно" для вычисления среднего значения фактически изменяется в зависимости от позиции текущего элемента данных, для крайних значений данных используется среднее значение только из соседних элементов)</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>array</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>array</code></strong> : <code>np.ndarray</code></dt>
 <dd>исходный массив</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -480,12 +481,12 @@ hljs.highlightAll();
 <pre><code class="python">class Extract:
 
     def __init__(self) -&gt; None:
-        self.freqs_pattern = re.compile(r&#39;(?&lt;=[_.])\d{4,5}(?=[_.])&#39;)   # паттерн извлечения частоты
-        self.datetime_pattern = re.compile(r&#39;\d{8}T\d{6}&#39;)             # паттерн для извлечения даты и времени
-        self.polarization_pattern = re.compile(r&#39;(RCP|LCP|R|L)&#39;)       # паттерн извлечения поляризации
+        self.freqs_pattern = re.compile(r'(?&lt;=[_.])\d{4,5}(?=[_.])')   # паттерн извлечения частоты
+        self.datetime_pattern = re.compile(r'\d{8}T\d{6}')             # паттерн для извлечения даты и времени
+        self.polarization_pattern = re.compile(r'(RCP|LCP|R|L)')       # паттерн извлечения поляризации
 
     def extract_number(self, filename: str, freqs_array_name: set = None) -&gt; int:
-        &#34;&#34;&#34;Функция для извлечения цифр - номеров частот из названия файла. Если передать в качестве второго аргумента ```set()```, то он будет наполняться выделенными номерами частот
+        """Функция для извлечения цифр - номеров частот из названия файла. Если передать в качестве второго аргумента ```set()```, то он будет наполняться выделенными номерами частот
 
         Args:
             filename (str): название ```.fits``` файла с данными
@@ -493,49 +494,49 @@ hljs.highlightAll();
 
         Returns:
             int: выделенное число
-        &#34;&#34;&#34;
+        """
         match = self.freqs_pattern.search(filename)
         if freqs_array_name is not None:
             freqs_array_name.add(int(match.group()))
         return int(match.group())
 
     def extract_datetime(self, filename: str) -&gt; str:
-        &#34;&#34;&#34;Функция для извлечения даты и времени из названия файла.
+        """Функция для извлечения даты и времени из названия файла.
 
         Args:
             filename (str): название ```.fits``` файла с данными или путь директории, вообщем - любая строка, содержащая дату и время в таком формате
 
         Returns:
-            str: строка, содержащая извлеченную дату и время в формате &#34;ГГГГММДДТЧЧММСС&#34;
-        &#34;&#34;&#34;
+            str: строка, содержащая извлеченную дату и время в формате "ГГГГММДДТЧЧММСС"
+        """
         match = self.datetime_pattern.search(filename)
         return match.group()
 
     def extract_polarization(self, filename: str) -&gt; str:
-        &#34;&#34;&#34;Функция для извлечения поляризации из названия файла
+        """Функция для извлечения поляризации из названия файла
 
         Args:
             filename (str): название ```.fits``` файла с данными
 
         Returns:
             str: выделенная поляризация (RCP, LCP, R, L)
-        &#34;&#34;&#34;
+        """
         match = self.polarization_pattern.search(filename)
         if match:
             return match.group()
         else:
-            raise ValueError(f&#34;Поляризация не найдена в названии файла: {filename}&#34;)</code></pre>
+            raise ValueError(f"Поляризация не найдена в названии файла: {filename}")</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="analise_utils.Extract.extract_datetime"><code class="name flex">
-<span>def <span class="ident">extract_datetime</span></span>(<span>self, filename: str) ‑> str</span>
+<span>def <span class="ident">extract_datetime</span></span>(<span>self, filename: str) ‑&gt; str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция для извлечения даты и времени из названия файла.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>filename</code></strong> : <code>str</code></dt>
 <dd>название <code>.fits</code> файла с данными или путь директории, вообщем - любая строка, содержащая дату и время в таком формате</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -545,15 +546,15 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.Extract.extract_number"><code class="name flex">
-<span>def <span class="ident">extract_number</span></span>(<span>self, filename: str, freqs_array_name: set = None) ‑> int</span>
+<span>def <span class="ident">extract_number</span></span>(<span>self, filename: str, freqs_array_name: set = None) ‑&gt; int</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция для извлечения цифр - номеров частот из названия файла. Если передать в качестве второго аргумента <code>set()</code>, то он будет наполняться выделенными номерами частот</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>filename</code></strong> : <code>str</code></dt>
 <dd>название <code>.fits</code> файла с данными</dd>
-<dt><strong><code>freqs_array_name</code></strong> :&ensp;<code>set</code>, optional</dt>
+<dt><strong><code>freqs_array_name</code></strong> : <code>set</code>, optional</dt>
 <dd>для наполнения. По умолчанию None.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -563,13 +564,13 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.Extract.extract_polarization"><code class="name flex">
-<span>def <span class="ident">extract_polarization</span></span>(<span>self, filename: str) ‑> str</span>
+<span>def <span class="ident">extract_polarization</span></span>(<span>self, filename: str) ‑&gt; str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Функция для извлечения поляризации из названия файла</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>filename</code></strong> : <code>str</code></dt>
 <dd>название <code>.fits</code> файла с данными</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -590,13 +591,13 @@ hljs.highlightAll();
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FindIntensity:
-    &#34;&#34;&#34;
+    """
     Получение суммарной интенсивности из пикселя, пикселя и окружающей области (4, 9, size), от всего Солнца
-    &#34;&#34;&#34;
+    """
 
     @staticmethod
     def find_intensity_in_point(matrix: np.ndarray, point: tuple) -&gt; float:
-        &#34;&#34;&#34;Интенсивность из одного пикселя
+        """Интенсивность из одного пикселя
 
         Args:
             matrix (np.ndarray): массив данных изображения
@@ -604,13 +605,13 @@ hljs.highlightAll();
 
         Returns:
             float: интенсивность из пикселя
-        &#34;&#34;&#34;
+        """
         x, y = point
         return matrix[y][x]
 
     @staticmethod
     def find_intensity_in_four_point(matrix: np.ndarray, point: tuple) -&gt; float:
-        &#34;&#34;&#34;Интенсивность из четырех пикселей. Берется указанная точка + три точки с правой стороны от него
+        """Интенсивность из четырех пикселей. Берется указанная точка + три точки с правой стороны от него
 
         Args:
             matrix (np.ndarray): массив данных изображения
@@ -618,7 +619,7 @@ hljs.highlightAll();
 
         Returns:
             float: интенсивность из пикселя
-        &#34;&#34;&#34;
+        """
         x, y = point
         intensity_sum = matrix[y][x] + matrix[y][x+1] + matrix[y+1][x] + matrix[y+1][x+1]
         intensity_avg = intensity_sum
@@ -626,7 +627,7 @@ hljs.highlightAll();
 
     @staticmethod
     def find_intensity_in_nine_point(matrix: np.ndarray, point: tuple) -&gt; float:
-        &#34;&#34;&#34;Интенсивность из девяти пикселей. Берется указанная точка + восемь точек вокруг нее
+        """Интенсивность из девяти пикселей. Берется указанная точка + восемь точек вокруг нее
 
         Args:
             matrix (np.ndarray): массив данных изображения
@@ -634,7 +635,7 @@ hljs.highlightAll();
 
         Returns:
             float: интенсивность из пикселя
-        &#34;&#34;&#34;
+        """
         x, y = point
         intensity_sum = matrix[y+1][x-1] + matrix[y+1][x] + matrix[y+1][x+1] + matrix[y][x-1] + matrix[y][x] + matrix[y][x+1] + matrix[y-1][x-1] + matrix[y-1][x] + matrix[y-1][x+1]
         intensity_avg = intensity_sum
@@ -671,21 +672,21 @@ hljs.highlightAll();
 <h3>Static methods</h3>
 <dl>
 <dt id="analise_utils.FindIntensity.find_intensity_in_alotof_point"><code class="name flex">
-<span>def <span class="ident">find_intensity_in_alotof_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑> float</span>
+<span>def <span class="ident">find_intensity_in_alotof_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑&gt; float</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="analise_utils.FindIntensity.find_intensity_in_four_point"><code class="name flex">
-<span>def <span class="ident">find_intensity_in_four_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑> float</span>
+<span>def <span class="ident">find_intensity_in_four_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑&gt; float</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Интенсивность из четырех пикселей. Берется указанная точка + три точки с правой стороны от него</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>matrix</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>matrix</code></strong> : <code>np.ndarray</code></dt>
 <dd>массив данных изображения</dd>
-<dt><strong><code>point</code></strong> :&ensp;<code>tuple</code></dt>
+<dt><strong><code>point</code></strong> : <code>tuple</code></dt>
 <dd>координаты точки</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -695,15 +696,15 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.FindIntensity.find_intensity_in_nine_point"><code class="name flex">
-<span>def <span class="ident">find_intensity_in_nine_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑> float</span>
+<span>def <span class="ident">find_intensity_in_nine_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑&gt; float</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Интенсивность из девяти пикселей. Берется указанная точка + восемь точек вокруг нее</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>matrix</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>matrix</code></strong> : <code>np.ndarray</code></dt>
 <dd>массив данных изображения</dd>
-<dt><strong><code>point</code></strong> :&ensp;<code>tuple</code></dt>
+<dt><strong><code>point</code></strong> : <code>tuple</code></dt>
 <dd>координаты точки</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -713,15 +714,15 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.FindIntensity.find_intensity_in_point"><code class="name flex">
-<span>def <span class="ident">find_intensity_in_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑> float</span>
+<span>def <span class="ident">find_intensity_in_point</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑&gt; float</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Интенсивность из одного пикселя</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>matrix</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dt><strong><code>matrix</code></strong> : <code>np.ndarray</code></dt>
 <dd>массив данных изображения</dd>
-<dt><strong><code>point</code></strong> :&ensp;<code>tuple</code></dt>
+<dt><strong><code>point</code></strong> : <code>tuple</code></dt>
 <dd>координаты точки</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -731,7 +732,7 @@ hljs.highlightAll();
 </dl></div>
 </dd>
 <dt id="analise_utils.FindIntensity.find_intensity_in_sun_disk"><code class="name flex">
-<span>def <span class="ident">find_intensity_in_sun_disk</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑> float</span>
+<span>def <span class="ident">find_intensity_in_sun_disk</span></span>(<span>matrix: numpy.ndarray, point: tuple) ‑&gt; float</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -751,8 +752,8 @@ hljs.highlightAll();
 
     @staticmethod
     def start_log(name_file):
-        logging.basicConfig(filename = f&#39;{name_file}.log&#39;,  filemode=&#39;a&#39;, level = logging.INFO, format = &#39;%(asctime)s - %(levelname)s - %(message)s&#39;, datefmt=&#39;%d-%b-%y %H:%M:%S&#39;)
-        # encoding = &#34;UTF-8&#34;
+        logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+        # encoding = "UTF-8"
 
     @staticmethod
     def logprint(info_msg):
@@ -788,32 +789,32 @@ hljs.highlightAll();
 
     @staticmethod
     def set_mpl_rc():
-        &#34;&#34;&#34;Функция, применяющая выверенные стандарты отображения MPL для удобства: размеры шрифтов, линий и пр.&#34;&#34;&#34;
+        """Функция, применяющая выверенные стандарты отображения MPL для удобства: размеры шрифтов, линий и пр."""
 
         SMALL_SIZE = 18
         MEDIUM_SIZE = 20
         BIGGER_SIZE = 25
 
-        plt.rc(&#39;font&#39;, size=MEDIUM_SIZE)                    # размер шрифта по умолчанию
-        plt.rc(&#39;axes&#39;, titlesize=BIGGER_SIZE)               # размер шрифта заголовков
-        plt.rc(&#39;axes&#39;, labelsize=MEDIUM_SIZE)               # размер шрифта подписей осей
-        plt.rc(&#39;xtick&#39;, labelsize=SMALL_SIZE)               # размер шрифта меток по оси x
-        plt.rc(&#39;ytick&#39;, labelsize=SMALL_SIZE)               # размер шрифта меток по оси y
-        plt.rc(&#39;legend&#39;, fontsize=MEDIUM_SIZE)              # размер шрифта легенды
-        plt.rc(&#39;figure&#39;, titlesize=BIGGER_SIZE)             # размер шрифта заголовка фигуры
-        plt.rc(&#39;lines&#39;, linewidth=6)                        # толщина линий
-        plt.rc(&#39;grid&#39;, linestyle=&#39;--&#39;, linewidth=1)       # стиль и толщина линий сетки
-        plt.rc(&#39;axes&#39;, grid=True)                           # отображение сетки на осях
+        plt.rc('font', size=MEDIUM_SIZE)                    # размер шрифта по умолчанию
+        plt.rc('axes', titlesize=BIGGER_SIZE)               # размер шрифта заголовков
+        plt.rc('axes', labelsize=MEDIUM_SIZE)               # размер шрифта подписей осей
+        plt.rc('xtick', labelsize=SMALL_SIZE)               # размер шрифта меток по оси x
+        plt.rc('ytick', labelsize=SMALL_SIZE)               # размер шрифта меток по оси y
+        plt.rc('legend', fontsize=MEDIUM_SIZE)              # размер шрифта легенды
+        plt.rc('figure', titlesize=BIGGER_SIZE)             # размер шрифта заголовка фигуры
+        plt.rc('lines', linewidth=6)                        # толщина линий
+        plt.rc('grid', linestyle='--', linewidth=1)       # стиль и толщина линий сетки
+        plt.rc('axes', grid=True)                           # отображение сетки на осях
 
         # Отключение предупреждений о попытке установки неположительных границ оси на логарифмической шкале при очистке графика
-        warnings.filterwarnings(&#39;ignore&#39;, message=&#39;UserWarning: Attempt to set non-positive xlim on a log-scaled axis will be ignored.&#39;)
+        warnings.filterwarnings('ignore', message='UserWarning: Attempt to set non-positive xlim on a log-scaled axis will be ignored.')
 
     @staticmethod
     def remove_ticks_in_log(axes):
-        &#34;&#34;&#34;shit code - не работает на 2+ осях, не ведаю почему, но код пусть будет
+        """shit code - не работает на 2+ осях, не ведаю почему, но код пусть будет
         Args:
             axes (_type_): _description_
-        &#34;&#34;&#34;
+        """
         axes.xaxis.set_major_formatter(ScalarFormatter())
         axes.xaxis.set_minor_formatter(NullFormatter())
         axes.xaxis.set_minor_locator(ticker.NullLocator())</code></pre>
@@ -827,7 +828,7 @@ hljs.highlightAll();
 <div class="desc"><p>shit code - не работает на 2+ осях, не ведаю почему, но код пусть будет</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>axes</code></strong> :&ensp;<code>_type_</code></dt>
+<dt><strong><code>axes</code></strong> : <code>_type_</code></dt>
 <dd><em>description</em></dd>
 </dl></div>
 </dd>
@@ -851,15 +852,15 @@ hljs.highlightAll();
 <pre><code class="python">class OsOperations:
 
     @staticmethod
-    def create_place(path: str, postfix: str = &#39;&#39;):
-        &#34;&#34;&#34;Создает папку с указанным путем, если она уже существует - удаляет ее и создает заново.
+    def create_place(path: str, postfix: str = ''):
+        """Создает папку с указанным путем, если она уже существует - удаляет ее и создает заново.
         Вторым аргументом можно передать постфикс для пути
 
         Args:
             path (str): путь к месту расположения
-            postfix (str, optional): постфикс для пути, отделяется от пути нижним подчеркиванием ```_```. По умолчанию пустая строка: &#39;&#39;
-        &#34;&#34;&#34;
-        new_path = f&#39;{path}_{postfix}&#39; if postfix else path
+            postfix (str, optional): постфикс для пути, отделяется от пути нижним подчеркиванием ```_```. По умолчанию пустая строка: ''
+        """
+        new_path = f'{path}_{postfix}' if postfix else path
         try:
             os.mkdir(new_path)
         except FileNotFoundError:
@@ -870,31 +871,31 @@ hljs.highlightAll();
             os.mkdir(new_path)
 
 # Пример использования
-# Utility.create_place(&#39;some/intermediate/path&#39;, &#39;postfix&#39;)
+# Utility.create_place('some/intermediate/path', 'postfix')
 
 
     @staticmethod
     def abс_sorted_files_in_folder(path_to_folder) -&gt; List[str]:
-        &#34;&#34;&#34;Создает список файлов в указанной папке, отсортированных по АЛФАВИТУ / ВРЕМЕНИ
+        """Создает список файлов в указанной папке, отсортированных по АЛФАВИТУ / ВРЕМЕНИ
 
         Args:
             path_to_folder (str): путь к месту расположения файлов
         Returns:
             files (list): список файлов в указанной папке
-        &#34;&#34;&#34;
+        """
         files = sorted(os.listdir(path_to_folder))
         return files
 
     @staticmethod
     def freq_sorted_files_in_folder(path_to_folder) -&gt; Tuple[List[str], List[int]]:
-        &#34;&#34;&#34;Создает список файлов в указанной папке, отсортированных по ЧАСТОТАМ
+        """Создает список файлов в указанной папке, отсортированных по ЧАСТОТАМ
 
         Args:
             path_to_folder (str): путь к месту расположения файлов
         Returns:
             files (list): список файлов в указанной папке
             freqs (list): список частот от меньшей к большей
-        &#34;&#34;&#34;
+        """
         extract = Extract()
         freqs = set()
         files = sorted(os.listdir(path_to_folder), key=lambda x: extract.extract_number(x, freqs))
@@ -902,8 +903,8 @@ hljs.highlightAll();
         return files, freqs
 
     @staticmethod
-    def freq_sorted_1st_two_files_in_folders(path_to_folder : str, type_path : str = &#39;relative&#39;) -&gt; Tuple[List[str], List[int]]:
-        &#34;&#34;&#34;Создает список из двух первых (по алфавиту/времени) файлов в каждой из подпапок в указанной папке, отсортированный по ЧАСТОТАМ
+    def freq_sorted_1st_two_files_in_folders(path_to_folder : str, type_path : str = 'relative') -&gt; Tuple[List[str], List[int]]:
+        """Создает список из двух первых (по алфавиту/времени) файлов в каждой из подпапок в указанной папке, отсортированный по ЧАСТОТАМ
 
         Args:
             path_to_folder (str): путь к месту расположения папок с файлами
@@ -911,18 +912,18 @@ hljs.highlightAll();
         Returns:
             files (list): список из двух первых файлов в каждой из подпапок
             freqs (list): список частот от меньшей к большей
-        &#34;&#34;&#34;
+        """
         extract = Extract()
         freqs = set()
         list_of_1st_two_files = []
         list_folders_in_folder = sorted(os.listdir(path_to_folder))
         for freq_folder in list_folders_in_folder:
-            list_of_files = sorted(os.listdir(f&#39;{path_to_folder}/{freq_folder}&#39;))
+            list_of_files = sorted(os.listdir(f'{path_to_folder}/{freq_folder}'))
             try:
-                list_of_1st_two_files.append(f&#39;{path_to_folder}/{freq_folder}/{list_of_files[0]}&#39;) if type_path == &#39;full&#39; else list_of_1st_two_files.append(f&#39;{list_of_files[0]}&#39;)
-                list_of_1st_two_files.append(f&#39;{path_to_folder}/{freq_folder}/{list_of_files[1]}&#39;) if type_path == &#39;full&#39; else list_of_1st_two_files.append(f&#39;{list_of_files[1]}&#39;)
+                list_of_1st_two_files.append(f'{path_to_folder}/{freq_folder}/{list_of_files[0]}') if type_path == 'full' else list_of_1st_two_files.append(f'{list_of_files[0]}')
+                list_of_1st_two_files.append(f'{path_to_folder}/{freq_folder}/{list_of_files[1]}') if type_path == 'full' else list_of_1st_two_files.append(f'{list_of_files[1]}')
             except IndexError as err:
-                Monitoring.logprint(f&#34;Похоже, есть пустая папка. Проверьте папку {freq_folder}. Ошибка: {err}&#34;)
+                Monitoring.logprint(f"Похоже, есть пустая папка. Проверьте папку {freq_folder}. Ошибка: {err}")
         files = sorted(list_of_1st_two_files, key=lambda x: extract.extract_number(x, freqs))
         freqs = sorted(list(freqs))
         return files, freqs</code></pre>
@@ -930,13 +931,13 @@ hljs.highlightAll();
 <h3>Static methods</h3>
 <dl>
 <dt id="analise_utils.OsOperations.abс_sorted_files_in_folder"><code class="name flex">
-<span>def <span class="ident">abс_sorted_files_in_folder</span></span>(<span>path_to_folder) ‑> List[str]</span>
+<span>def <span class="ident">abс_sorted_files_in_folder</span></span>(<span>path_to_folder) ‑&gt; List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Создает список файлов в указанной папке, отсортированных по АЛФАВИТУ / ВРЕМЕНИ</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>path_to_folder</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>path_to_folder</code></strong> : <code>str</code></dt>
 <dd>путь к месту расположения файлов</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -950,22 +951,22 @@ hljs.highlightAll();
 Вторым аргументом можно передать постфикс для пути</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>path</code></strong> : <code>str</code></dt>
 <dd>путь к месту расположения</dd>
-<dt><strong><code>postfix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>postfix</code></strong> : <code>str</code>, optional</dt>
 <dd>постфикс для пути, отделяется от пути нижним подчеркиванием <code>_</code>. По умолчанию пустая строка: ''</dd>
 </dl></div>
 </dd>
 <dt id="analise_utils.OsOperations.freq_sorted_1st_two_files_in_folders"><code class="name flex">
-<span>def <span class="ident">freq_sorted_1st_two_files_in_folders</span></span>(<span>path_to_folder: str, type_path: str = 'relative') ‑> Tuple[List[str], List[int]]</span>
+<span>def <span class="ident">freq_sorted_1st_two_files_in_folders</span></span>(<span>path_to_folder: str, type_path: str = 'relative') ‑&gt; Tuple[List[str], List[int]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Создает список из двух первых (по алфавиту/времени) файлов в каждой из подпапок в указанной папке, отсортированный по ЧАСТОТАМ</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>path_to_folder</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>path_to_folder</code></strong> : <code>str</code></dt>
 <dd>путь к месту расположения папок с файлами</dd>
-<dt><strong><code>type_path</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>type_path</code></strong> : <code>str</code></dt>
 <dd>желаемый путь на выходе: только имена файлов <code>relative</code> или полный <code>full</code></dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -973,13 +974,13 @@ hljs.highlightAll();
 freqs (list): список частот от меньшей к большей</p></div>
 </dd>
 <dt id="analise_utils.OsOperations.freq_sorted_files_in_folder"><code class="name flex">
-<span>def <span class="ident">freq_sorted_files_in_folder</span></span>(<span>path_to_folder) ‑> Tuple[List[str], List[int]]</span>
+<span>def <span class="ident">freq_sorted_files_in_folder</span></span>(<span>path_to_folder) ‑&gt; Tuple[List[str], List[int]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Создает список файлов в указанной папке, отсортированных по ЧАСТОТАМ</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>path_to_folder</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>path_to_folder</code></strong> : <code>str</code></dt>
 <dd>путь к месту расположения файлов</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1079,77 +1080,77 @@ freqs (list): список частот от меньшей к большей</p
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="analise_utils.ArrayOperations" href="#analise_utils.ArrayOperations">ArrayOperations</a></code></h4>
+<h4><code><a href="#analise_utils.ArrayOperations" title="analise_utils.ArrayOperations">ArrayOperations</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.ArrayOperations.calculate_weighted_centroid" href="#analise_utils.ArrayOperations.calculate_weighted_centroid">calculate_weighted_centroid</a></code></li>
-<li><code><a title="analise_utils.ArrayOperations.find_center_of_mass" href="#analise_utils.ArrayOperations.find_center_of_mass">find_center_of_mass</a></code></li>
-<li><code><a title="analise_utils.ArrayOperations.find_max_around_point" href="#analise_utils.ArrayOperations.find_max_around_point">find_max_around_point</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.calculate_weighted_centroid" title="analise_utils.ArrayOperations.calculate_weighted_centroid">calculate_weighted_centroid</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.find_center_of_mass" title="analise_utils.ArrayOperations.find_center_of_mass">find_center_of_mass</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.find_max_around_point" title="analise_utils.ArrayOperations.find_max_around_point">find_max_around_point</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.ConvertingArrays" href="#analise_utils.ConvertingArrays">ConvertingArrays</a></code></h4>
+<h4><code><a href="#analise_utils.ConvertingArrays" title="analise_utils.ConvertingArrays">ConvertingArrays</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.ConvertingArrays.Tb2sfu" href="#analise_utils.ConvertingArrays.Tb2sfu">Tb2sfu</a></code></li>
-<li><code><a title="analise_utils.ConvertingArrays.arr2str4print" href="#analise_utils.ConvertingArrays.arr2str4print">arr2str4print</a></code></li>
-<li><code><a title="analise_utils.ConvertingArrays.background_subtraction" href="#analise_utils.ConvertingArrays.background_subtraction">background_subtraction</a></code></li>
-<li><code><a title="analise_utils.ConvertingArrays.gs_approximation" href="#analise_utils.ConvertingArrays.gs_approximation">gs_approximation</a></code></li>
-<li><code><a title="analise_utils.ConvertingArrays.running_mean" href="#analise_utils.ConvertingArrays.running_mean">running_mean</a></code></li>
-<li><code><a title="analise_utils.ConvertingArrays.variable_running_mean" href="#analise_utils.ConvertingArrays.variable_running_mean">variable_running_mean</a></code></li>
+<li><code><a href="#analise_utils.ConvertingArrays.Tb2sfu" title="analise_utils.ConvertingArrays.Tb2sfu">Tb2sfu</a></code></li>
+<li><code><a href="#analise_utils.ConvertingArrays.arr2str4print" title="analise_utils.ConvertingArrays.arr2str4print">arr2str4print</a></code></li>
+<li><code><a href="#analise_utils.ConvertingArrays.background_subtraction" title="analise_utils.ConvertingArrays.background_subtraction">background_subtraction</a></code></li>
+<li><code><a href="#analise_utils.ConvertingArrays.gs_approximation" title="analise_utils.ConvertingArrays.gs_approximation">gs_approximation</a></code></li>
+<li><code><a href="#analise_utils.ConvertingArrays.running_mean" title="analise_utils.ConvertingArrays.running_mean">running_mean</a></code></li>
+<li><code><a href="#analise_utils.ConvertingArrays.variable_running_mean" title="analise_utils.ConvertingArrays.variable_running_mean">variable_running_mean</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.Extract" href="#analise_utils.Extract">Extract</a></code></h4>
+<h4><code><a href="#analise_utils.Extract" title="analise_utils.Extract">Extract</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.Extract.extract_datetime" href="#analise_utils.Extract.extract_datetime">extract_datetime</a></code></li>
-<li><code><a title="analise_utils.Extract.extract_number" href="#analise_utils.Extract.extract_number">extract_number</a></code></li>
-<li><code><a title="analise_utils.Extract.extract_polarization" href="#analise_utils.Extract.extract_polarization">extract_polarization</a></code></li>
+<li><code><a href="#analise_utils.Extract.extract_datetime" title="analise_utils.Extract.extract_datetime">extract_datetime</a></code></li>
+<li><code><a href="#analise_utils.Extract.extract_number" title="analise_utils.Extract.extract_number">extract_number</a></code></li>
+<li><code><a href="#analise_utils.Extract.extract_polarization" title="analise_utils.Extract.extract_polarization">extract_polarization</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.FindIntensity" href="#analise_utils.FindIntensity">FindIntensity</a></code></h4>
+<h4><code><a href="#analise_utils.FindIntensity" title="analise_utils.FindIntensity">FindIntensity</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.FindIntensity.find_intensity_in_alotof_point" href="#analise_utils.FindIntensity.find_intensity_in_alotof_point">find_intensity_in_alotof_point</a></code></li>
-<li><code><a title="analise_utils.FindIntensity.find_intensity_in_four_point" href="#analise_utils.FindIntensity.find_intensity_in_four_point">find_intensity_in_four_point</a></code></li>
-<li><code><a title="analise_utils.FindIntensity.find_intensity_in_nine_point" href="#analise_utils.FindIntensity.find_intensity_in_nine_point">find_intensity_in_nine_point</a></code></li>
-<li><code><a title="analise_utils.FindIntensity.find_intensity_in_point" href="#analise_utils.FindIntensity.find_intensity_in_point">find_intensity_in_point</a></code></li>
-<li><code><a title="analise_utils.FindIntensity.find_intensity_in_sun_disk" href="#analise_utils.FindIntensity.find_intensity_in_sun_disk">find_intensity_in_sun_disk</a></code></li>
+<li><code><a href="#analise_utils.FindIntensity.find_intensity_in_alotof_point" title="analise_utils.FindIntensity.find_intensity_in_alotof_point">find_intensity_in_alotof_point</a></code></li>
+<li><code><a href="#analise_utils.FindIntensity.find_intensity_in_four_point" title="analise_utils.FindIntensity.find_intensity_in_four_point">find_intensity_in_four_point</a></code></li>
+<li><code><a href="#analise_utils.FindIntensity.find_intensity_in_nine_point" title="analise_utils.FindIntensity.find_intensity_in_nine_point">find_intensity_in_nine_point</a></code></li>
+<li><code><a href="#analise_utils.FindIntensity.find_intensity_in_point" title="analise_utils.FindIntensity.find_intensity_in_point">find_intensity_in_point</a></code></li>
+<li><code><a href="#analise_utils.FindIntensity.find_intensity_in_sun_disk" title="analise_utils.FindIntensity.find_intensity_in_sun_disk">find_intensity_in_sun_disk</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.Monitoring" href="#analise_utils.Monitoring">Monitoring</a></code></h4>
+<h4><code><a href="#analise_utils.Monitoring" title="analise_utils.Monitoring">Monitoring</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.Monitoring.logprint" href="#analise_utils.Monitoring.logprint">logprint</a></code></li>
-<li><code><a title="analise_utils.Monitoring.start_log" href="#analise_utils.Monitoring.start_log">start_log</a></code></li>
+<li><code><a href="#analise_utils.Monitoring.logprint" title="analise_utils.Monitoring.logprint">logprint</a></code></li>
+<li><code><a href="#analise_utils.Monitoring.start_log" title="analise_utils.Monitoring.start_log">start_log</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.MplFunction" href="#analise_utils.MplFunction">MplFunction</a></code></h4>
+<h4><code><a href="#analise_utils.MplFunction" title="analise_utils.MplFunction">MplFunction</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.MplFunction.remove_ticks_in_log" href="#analise_utils.MplFunction.remove_ticks_in_log">remove_ticks_in_log</a></code></li>
-<li><code><a title="analise_utils.MplFunction.set_mpl_rc" href="#analise_utils.MplFunction.set_mpl_rc">set_mpl_rc</a></code></li>
+<li><code><a href="#analise_utils.MplFunction.remove_ticks_in_log" title="analise_utils.MplFunction.remove_ticks_in_log">remove_ticks_in_log</a></code></li>
+<li><code><a href="#analise_utils.MplFunction.set_mpl_rc" title="analise_utils.MplFunction.set_mpl_rc">set_mpl_rc</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.OsOperations" href="#analise_utils.OsOperations">OsOperations</a></code></h4>
+<h4><code><a href="#analise_utils.OsOperations" title="analise_utils.OsOperations">OsOperations</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.OsOperations.abс_sorted_files_in_folder" href="#analise_utils.OsOperations.abс_sorted_files_in_folder">abс_sorted_files_in_folder</a></code></li>
-<li><code><a title="analise_utils.OsOperations.create_place" href="#analise_utils.OsOperations.create_place">create_place</a></code></li>
-<li><code><a title="analise_utils.OsOperations.freq_sorted_1st_two_files_in_folders" href="#analise_utils.OsOperations.freq_sorted_1st_two_files_in_folders">freq_sorted_1st_two_files_in_folders</a></code></li>
-<li><code><a title="analise_utils.OsOperations.freq_sorted_files_in_folder" href="#analise_utils.OsOperations.freq_sorted_files_in_folder">freq_sorted_files_in_folder</a></code></li>
+<li><code><a href="#analise_utils.OsOperations.abс_sorted_files_in_folder" title="analise_utils.OsOperations.abс_sorted_files_in_folder">abс_sorted_files_in_folder</a></code></li>
+<li><code><a href="#analise_utils.OsOperations.create_place" title="analise_utils.OsOperations.create_place">create_place</a></code></li>
+<li><code><a href="#analise_utils.OsOperations.freq_sorted_1st_two_files_in_folders" title="analise_utils.OsOperations.freq_sorted_1st_two_files_in_folders">freq_sorted_1st_two_files_in_folders</a></code></li>
+<li><code><a href="#analise_utils.OsOperations.freq_sorted_files_in_folder" title="analise_utils.OsOperations.freq_sorted_files_in_folder">freq_sorted_files_in_folder</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.Properties" href="#analise_utils.Properties">Properties</a></code></h4>
+<h4><code><a href="#analise_utils.Properties" title="analise_utils.Properties">Properties</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.Properties.init_customization" href="#analise_utils.Properties.init_customization">init_customization</a></code></li>
+<li><code><a href="#analise_utils.Properties.init_customization" title="analise_utils.Properties.init_customization">init_customization</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="analise_utils.ZirinTb" href="#analise_utils.ZirinTb">ZirinTb</a></code></h4>
+<h4><code><a href="#analise_utils.ZirinTb" title="analise_utils.ZirinTb">ZirinTb</a></code></h4>
 <ul class="">
-<li><code><a title="analise_utils.ZirinTb.fitFunc" href="#analise_utils.ZirinTb.fitFunc">fitFunc</a></code></li>
-<li><code><a title="analise_utils.ZirinTb.getSfuAtFrequency" href="#analise_utils.ZirinTb.getSfuAtFrequency">getSfuAtFrequency</a></code></li>
-<li><code><a title="analise_utils.ZirinTb.getTbAtFrequency" href="#analise_utils.ZirinTb.getTbAtFrequency">getTbAtFrequency</a></code></li>
+<li><code><a href="#analise_utils.ZirinTb.fitFunc" title="analise_utils.ZirinTb.fitFunc">fitFunc</a></code></li>
+<li><code><a href="#analise_utils.ZirinTb.getSfuAtFrequency" title="analise_utils.ZirinTb.getSfuAtFrequency">getSfuAtFrequency</a></code></li>
+<li><code><a href="#analise_utils.ZirinTb.getTbAtFrequency" title="analise_utils.ZirinTb.getTbAtFrequency">getTbAtFrequency</a></code></li>
 </ul>
 </li>
 </ul>
