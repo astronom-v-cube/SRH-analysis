@@ -1,5 +1,6 @@
 import ftplib
 import os
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,7 +36,7 @@ if download_and_delete_fits:
     ftp = ftplib.FTP('ftp.rao.istp.ac.ru', 'anonymous', 'anonymous')
     ftp.cwd(f'SRH/corrPlot/{date_spl[2]}/{date_spl[1]}')
 
-    for filename in filenames:
+    for filename in tqdm(filenames, desc='Скачивание файлов'):
         with open(filename, 'wb') as file:
             try:
                 ftp.retrbinary('RETR %s' % filename, file.write)
@@ -106,7 +107,7 @@ except:
     print('Один из файлов не найден, или возникла какая-то ошибка')
 
 if download_and_delete_fits:
-    for file in filenames:
+    for file in tqdm(filenames, desc='Удаление файлов'):
         os.unlink(file)
 
 colors = plt.cm.jet(np.linspace(0, 1, 16))
@@ -136,7 +137,7 @@ for freq in range(0, 16):
     else:
 
         time_line = clear_time_line(data_0306[freq][0])
-    
+
         ax1.plot(time_line, data_0306[freq][1], label=f'{freqs_0306[freq]} GHz', color=colors[freq])
         ax1.plot(time_line, data_0306[freq][2], color=colors[freq])
         ax2.plot(time_line, data_0306[freq][3], label=f'{freqs_0306[freq]} GHz', color=colors[freq])
@@ -145,7 +146,7 @@ for freq in range(0, 16):
         print(data_0612[freq][0])
         time_line = clear_time_line(data_0612[freq][0])
         print(time_line)
-        
+
         ax3.plot(time_line, data_0612[freq][1], label=f'{freqs_0612[freq]} GHz', color=colors[freq])
         ax3.plot(time_line, data_0612[freq][2], color=colors[freq])
         ax4.plot(time_line, data_0612[freq][3], label=f'{freqs_0612[freq]} GHz', color=colors[freq])
@@ -153,7 +154,7 @@ for freq in range(0, 16):
 
 
         time_line = clear_time_line(data_1224[freq][0])
-        
+
         ax5.plot(time_line, data_1224[freq][1], label=f'{freqs_1224[freq]} GHz', color=colors[freq])
         ax5.plot(time_line, data_1224[freq][2], color=colors[freq])
         ax6.plot(time_line, data_1224[freq][3], label=f'{freqs_1224[freq]} GHz', color=colors[freq])
