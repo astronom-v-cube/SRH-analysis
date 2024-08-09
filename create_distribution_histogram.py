@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from analise_utils import MplFunction, ArrayOperations, Monitoring
 MplFunction.set_mpl_rc()
+Monitoring.start_log('logs')
 
 def create_distribution_histogram(input_file : str, replace_minus_to_zero = True):
     """Построение гистограммы распределения значений яркостной температуры в ```.fits``` файле
@@ -32,7 +33,6 @@ def create_distribution_histogram(input_file : str, replace_minus_to_zero = True
     plt.ylabel('Количество пикселей')
     plt.yscale("log")
     plt.tight_layout()
-
     plt.show()
 
 if __name__ == "__main__":
