@@ -1,4 +1,3 @@
-from email import header
 import re, os
 import shutil
 from typing import List, Union, Tuple
@@ -359,7 +358,7 @@ class Monitoring:
         Args:
             name_file (str): название файла
         """
-        logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+        logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', encoding = "UTF-8")
         # encoding = "UTF-8"
 
     @staticmethod
@@ -379,7 +378,7 @@ class Monitoring:
         Args:
             header (Header): заголовок ```.fits``` файла
         """
-        Monitoring.logprint(f'Дата: {header['DATE-OBS']}\nВремя: {header['T-OBS']}\nИнструмент: {header['INSTRUME']}\nЧастота: {header['FREQUENC']}\nРазмер изображения: {header['NAXIS1']}')
+        Monitoring.logprint(f'\nДата: {header['DATE-OBS']}\nВремя: {header['T-OBS']}\nИнструмент: {header['INSTRUME']}\nЧастота: {header['FREQUENC']}\nРазмер изображения: {header['NAXIS1']} px * {header['NAXIS2']} px\nУгловое разрешение: {header['CDELT1']} arcsec/px\nБольшая полуось ДН: {header['PSF_ELLA']}\nМалая полуось ДН: {header['PSF_ELLB']}\nУгол поворота ДН: {header['PSF_ELLT']}')
 
 class ConvertingArrays:
     """
