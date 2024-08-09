@@ -1,8 +1,11 @@
+from email import header
 import re, os
 import shutil
 from typing import List, Union, Tuple
 import warnings
 from scipy import constants
+from astropy.io import fits
+from astropy.io.fits.header import Header
 import scipy.optimize as opt
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -287,6 +290,32 @@ class ArrayOperations:
 
         return (int(round(weighted_y)), int(round(weighted_x)), values.max())
 
+    @staticmethod
+    def replace_minus_to_zero(data: Union[str, np.ndarray]) -> Tuple[np.ndarray, Header]:
+        """Функция принимает на вход массив и возвращает его, заменяя отрицательные значения нулями. В случае, если массив является ```.fits``` файлом (т.е. путем к нему), функция также возвращает ```header```, чтобы его можно было сохранить в новом файле, в случае необходимости
+
+        Args:
+            data (Union[str, np.ndarray]): массив или путь к ```.fits``` файлу, где нужно заменить отрицательные значения нулями
+
+        Returns:
+            np.ndarray: очищенный от отрицательных значений массив
+            Header: исходный заголовок ```.fits``` файла для возможности его пересохранения
+        """
+        if type(data) == str:
+            hdul = fits.open(data)
+            array_data = hdul[0].data
+            header_data = hdul[0].header
+            array_data[array_data < 0] = 0
+            return array_data, header_data
+
+        elif type(data) == np.ndarray or type(data) == list:
+            array_data = data
+            array_data[array_data < 0] = 0
+            return np.array(array_data)
+
+        else:
+            Monitoring.logprint("Ошибка! Тип данных не соответствует")
+
 class MplFunction:
 
     @staticmethod
@@ -324,14 +353,33 @@ class MplFunction:
 class Monitoring:
 
     @staticmethod
-    def start_log(name_file):
+    def start_log(name_file : str):
+        """Инициализация ```.log``` файла
+
+        Args:
+            name_file (str): название файла
+        """
         logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
         # encoding = "UTF-8"
 
     @staticmethod
-    def logprint(info_msg):
+    def logprint(info_msg : str):
+        """Вывод отладочной информации и в консоль, и в ```.log``` файл
+
+        Args:
+            info_msg (str): строка с отладочной информацией
+        """
         print(info_msg)
         logging.info(info_msg)
+
+    @staticmethod
+    def header_info(header: Header):
+        """Выводит основную информацию из ```header``` в ```.fits``` файле
+
+        Args:
+            header (Header): заголовок ```.fits``` файла
+        """
+        Monitoring.logprint(f'Дата: {header['DATE-OBS']}\nВремя: {header['T-OBS']}\nИнструмент: {header['INSTRUME']}\nЧастота: {header['FREQUENC']}\nРазмер изображения: {header['NAXIS1']}')
 
 class ConvertingArrays:
     """

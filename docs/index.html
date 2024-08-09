@@ -169,7 +169,33 @@ hljs.highlightAll();
         weighted_x = np.average(x_coords, weights=values)
         weighted_y = np.average(y_coords, weights=values)
 
-        return (int(round(weighted_y)), int(round(weighted_x)), values.max())</code></pre>
+        return (int(round(weighted_y)), int(round(weighted_x)), values.max())
+
+    @staticmethod
+    def replace_minus_to_zero(data: Union[str, np.ndarray]) -&gt; Tuple[np.ndarray, Header]:
+        """Функция принимает на вход массив и возвращает его, заменяя отрицательные значения нулями. В случае, если массив является ```.fits``` файлом (т.е. путем к нему), функция также возвращает ```header```, чтобы его можно было сохранить в новом файле, в случае необходимости
+
+        Args:
+            data (Union[str, np.ndarray]): массив или путь к ```.fits``` файлу, где нужно заменить отрицательные значения нулями
+
+        Returns:
+            np.ndarray: очищенный от отрицательных значений массив
+            Header: исходный заголовок ```.fits``` файла для возможности его пересохранения
+        """
+        if type(data) == str:
+            hdul = fits.open(data)
+            array_data = hdul[0].data
+            header_data = hdul[0].header
+            array_data[array_data &lt; 0] = 0
+            return array_data, header_data
+
+        elif type(data) == np.ndarray or type(data) == list:
+            array_data = data
+            array_data[array_data &lt; 0] = 0
+            return np.array(array_data)
+
+        else:
+            Monitoring.logprint("Ошибка! Тип данных не соответствует")</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -238,6 +264,24 @@ hljs.highlightAll();
 <dl>
 <dt><code>tuple</code></dt>
 <dd>кортеж из трех значений: строкa <code>max_row</code> и столбец <code>max_col</code> максимального значения, а также значение <code>max_value</code> самого большого элемента в указанной области.</dd>
+</dl></div>
+</dd>
+<dt id="analise_utils.ArrayOperations.replace_minus_to_zero"><code class="name flex">
+<span>def <span class="ident">replace_minus_to_zero</span></span>(<span>data: Union[str, numpy.ndarray]) ‑&gt; Tuple[numpy.ndarray, astropy.io.fits.header.Header]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Функция принимает на вход массив и возвращает его, заменяя отрицательные значения нулями. В случае, если массив является <code>.fits</code> файлом (т.е. путем к нему), функция также возвращает <code>header</code>, чтобы его можно было сохранить в новом файле, в случае необходимости</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>data</code></strong> : <code>Union[str, np.ndarray]</code></dt>
+<dd>массив или путь к <code>.fits</code> файлу, где нужно заменить отрицательные значения нулями</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.ndarray</code></dt>
+<dd>очищенный от отрицательных значений массив</dd>
+<dt><code>Header</code></dt>
+<dd>исходный заголовок <code>.fits</code> файла для возможности его пересохранения</dd>
 </dl></div>
 </dd>
 </dl>
@@ -751,28 +795,68 @@ hljs.highlightAll();
 <pre><code class="python">class Monitoring:
 
     @staticmethod
-    def start_log(name_file):
+    def start_log(name_file : str):
+        """Инициализация ```.log``` файла
+
+        Args:
+            name_file (str): название файла
+        """
         logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
         # encoding = "UTF-8"
 
     @staticmethod
-    def logprint(info_msg):
+    def logprint(info_msg : str):
+        """Вывод отладочной информации и в консоль, и в ```.log``` файл
+
+        Args:
+            info_msg (str): строка с отладочной информацией
+        """
         print(info_msg)
-        logging.info(info_msg)</code></pre>
+        logging.info(info_msg)
+
+    @staticmethod
+    def header_info(header: Header):
+        """Выводит основную информацию из ```header``` в ```.fits``` файле
+
+        Args:
+            header (Header): заголовок ```.fits``` файла
+        """
+        Monitoring.logprint(f'Дата: {header['DATE-OBS']}\nВремя: {header['T-OBS']}\nИнструмент: {header['INSTRUME']}\nЧастота: {header['FREQUENC']}\nРазмер изображения: {header['NAXIS1']}')</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
-<dt id="analise_utils.Monitoring.logprint"><code class="name flex">
-<span>def <span class="ident">logprint</span></span>(<span>info_msg)</span>
+<dt id="analise_utils.Monitoring.header_info"><code class="name flex">
+<span>def <span class="ident">header_info</span></span>(<span>header: astropy.io.fits.header.Header)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Выводит основную информацию из <code>header</code> в <code>.fits</code> файле</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>header</code></strong> : <code>Header</code></dt>
+<dd>заголовок <code>.fits</code> файла</dd>
+</dl></div>
+</dd>
+<dt id="analise_utils.Monitoring.logprint"><code class="name flex">
+<span>def <span class="ident">logprint</span></span>(<span>info_msg: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Вывод отладочной информации и в консоль, и в <code>.log</code> файл</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>info_msg</code></strong> : <code>str</code></dt>
+<dd>строка с отладочной информацией</dd>
+</dl></div>
 </dd>
 <dt id="analise_utils.Monitoring.start_log"><code class="name flex">
-<span>def <span class="ident">start_log</span></span>(<span>name_file)</span>
+<span>def <span class="ident">start_log</span></span>(<span>name_file: str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Инициализация <code>.log</code> файла</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name_file</code></strong> : <code>str</code></dt>
+<dd>название файла</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -1085,6 +1169,7 @@ freqs (list): список частот от меньшей к большей</p
 <li><code><a href="#analise_utils.ArrayOperations.calculate_weighted_centroid" title="analise_utils.ArrayOperations.calculate_weighted_centroid">calculate_weighted_centroid</a></code></li>
 <li><code><a href="#analise_utils.ArrayOperations.find_center_of_mass" title="analise_utils.ArrayOperations.find_center_of_mass">find_center_of_mass</a></code></li>
 <li><code><a href="#analise_utils.ArrayOperations.find_max_around_point" title="analise_utils.ArrayOperations.find_max_around_point">find_max_around_point</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.replace_minus_to_zero" title="analise_utils.ArrayOperations.replace_minus_to_zero">replace_minus_to_zero</a></code></li>
 </ul>
 </li>
 <li>
@@ -1119,6 +1204,7 @@ freqs (list): список частот от меньшей к большей</p
 <li>
 <h4><code><a href="#analise_utils.Monitoring" title="analise_utils.Monitoring">Monitoring</a></code></h4>
 <ul class="">
+<li><code><a href="#analise_utils.Monitoring.header_info" title="analise_utils.Monitoring.header_info">header_info</a></code></li>
 <li><code><a href="#analise_utils.Monitoring.logprint" title="analise_utils.Monitoring.logprint">logprint</a></code></li>
 <li><code><a href="#analise_utils.Monitoring.start_log" title="analise_utils.Monitoring.start_log">start_log</a></code></li>
 </ul>
