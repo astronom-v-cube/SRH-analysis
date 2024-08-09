@@ -1,12 +1,18 @@
-from matplotlib.colors import TwoSlopeNorm
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+import logging
+import os
+import re
+import sys
+
 import matplotlib.colors as colors
+import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
-import os, sys, re
-import logging
-from analise_utils import OsOperations, ZirinTb, FindIntensity, MplFunction, Monitoring, Extract, ConvertingArrays, ArrayOperations
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.widgets import Slider
+
+from analise_utils import (ArrayOperations, ConvertingArrays, Extract,
+                           FindIntensity, Monitoring, MplFunction,
+                           OsOperations, ZirinTb)
 
 Monitoring.start_log('log')
 logging.info(f'Start program alignment of the solar disk')

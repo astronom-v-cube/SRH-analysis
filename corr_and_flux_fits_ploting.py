@@ -1,11 +1,11 @@
 import ftplib
 import os
-from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 from matplotlib.ticker import FuncFormatter
+from tqdm import tqdm
 
 # отображение всех значений матрицы в консоль
 np.set_printoptions(threshold=np.inf)

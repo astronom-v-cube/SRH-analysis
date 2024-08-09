@@ -1,17 +1,20 @@
-import re, os
+import logging
+import os
+import re
 import shutil
-from typing import List, Union, Tuple
 import warnings
-from scipy import constants
+from typing import List, Tuple, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.optimize as opt
 from astropy.io import fits
 from astropy.io.fits.header import Header
-import scipy.optimize as opt
-from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
 from matplotlib import ticker
-from matplotlib.ticker import ScalarFormatter, NullFormatter
-import numpy as np
-import logging
+from matplotlib.ticker import NullFormatter, ScalarFormatter
+from scipy import constants
+from scipy.optimize import curve_fit
+
 
 class Extract:
 
@@ -63,26 +66,42 @@ class Extract:
             raise ValueError(f"Поляризация не найдена в названии файла: {filename}")
 
 class ZirinTb:
-# Zirin H. et al.
-# The Microwave Brightness Temperature Spectrum of the Quiet Sun
-# The Astrophysical Journal. 1991
 
-    def fitFunc(self, f, A, B, C):
-        return A + B*f + C*f**-1.8
+    'Получение яркостной температуры в ```K``` или плотности потока излучения в ```sfu``` спокойного Солнца на указанной частоте в соответствии со статьей: ```Zirin H. et al. The Microwave Brightness Temperature Spectrum of the Quiet Sun. The Astrophysical Journal, 1991```. За код благодарность сотрудникам ИСЗФ СО РАН'
+
+    def fitFunc(self, freq, A, B, C):
+        """Аппроксимационная функция
+        freq: частота
+        A: коэффициент представляет собой постоянную составляющую яркостной температуры, которая не зависит от частоты
+        B: линейный вклад частоты в яркостную температуру
+        C: вклад компонента характерен для процессов, связанных с распространением электромагнитного излучения через солнечную атмосферу
+        """
+        return A + B*freq + C*freq**-1.8
 
     def __init__(self):
-
         self.frequency = np.array([1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.2, 5.0, 5.8, 7.0, 8.2, 9.4, 10.6, 11.8, 13.2, 14.8, 16.4, 18.0]) # frequency [GHz]
         self.Tb = np.array([70.5, 63.8, 52.2, 42.9, 32.8, 27.1, 24.2, 21.7, 19.4, 17.6, 15.9, 14.1, 12.9, 12.2, 11.3, 11.0, 10.8, 10.8, 10.7, 10.3]) # brightness temperature [1e3K]
         self.guess = [1, 1, 1]
         self.fitTbParams, _ = opt.curve_fit(self.fitFunc, self.frequency, self.Tb, p0=self.guess)
         self.solarDiskRadius = np.deg2rad(900/3600)
 
-    def getTbAtFrequency(self, f):
-        return self.fitFunc(f, self.fitTbParams[0],self.fitTbParams[1],self.fitTbParams[2])
+    def getTbAtFrequency(self, freq):
+        """Получение яркостной температуры в ```1e3 K``` спокойного Солнца на указанной частоте
+        Args:
+            freq (Union(int, float)): необходимая частота в ГГц (например, ```6.2```)
+        Returns:
+            Tb (float): Яркостная температура в ```1e3 K```. Для получения в ```K``` умножьте на 1000
+        """
+        return self.fitFunc(freq, self.fitTbParams[0], self.fitTbParams[1], self.fitTbParams[2])
 
-    def getSfuAtFrequency(self, f):
-        return 2*constants.k*self.getTbAtFrequency(f)*1e3/(constants.c/(f*1e9))**2 * np.pi*self.solarDiskRadius**2 / 1e-22
+    def getSfuAtFrequency(self, freq):
+        """Получение плотности потока излучения в ```sfu``` спокойного Солнца на указанной частоте
+        Args:
+            freq (Union(int, float)): необходимая частота в ГГц (например, ```6.2```)
+        Returns:
+            sfu (float): Плотность потока излучения в ```sfu```
+        """
+        return 2*constants.k*self.getTbAtFrequency(freq)*1e3/(constants.c/(freq*1e9))**2 * np.pi*self.solarDiskRadius**2 / 1e-22
 
 class FindIntensity:
     """
@@ -354,7 +373,6 @@ class Monitoring:
     @staticmethod
     def start_log(name_file : str):
         """Инициализация ```.log``` файла
-
         Args:
             name_file (str): название файла
         """
@@ -567,7 +585,7 @@ class OsOperations:
         freqs = sorted(list(freqs))
         return files, freqs
 
-class Properties():
+class Properties:
 
     @staticmethod
     def init_customization():

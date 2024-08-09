@@ -1,6 +1,8 @@
 import urllib.request
+
+from tqdm import tqdm
+
 from analise_utils import OsOperations
-from tqdm import tqdm 
 
 date = '202405'
 OsOperations.create_place(date)

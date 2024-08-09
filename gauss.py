@@ -194,12 +194,14 @@ for collection in plt.findobj(contours):
     print(f"Площадь в пикселях: {area_in_pixels}") """
 
 
+import os
+import re
+
+import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
-from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
 from matplotlib.path import Path
-import os, re
+from scipy.optimize import curve_fit
 
 directory = "D:/08-26-46"
 

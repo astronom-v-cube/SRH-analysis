@@ -1,8 +1,9 @@
-from astropy.io import fits
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from astropy.io import fits
 
-from analise_utils import MplFunction, ArrayOperations, Monitoring
+from analise_utils import ArrayOperations, Monitoring, MplFunction
+
 MplFunction.set_mpl_rc()
 Monitoring.start_log('logs')
 
@@ -14,7 +15,7 @@ def create_distribution_histogram(input_file : str, replace_minus_to_zero = True
         replace_minus_to_zero (bool, optional): параметр, регулирующий замену отрицательных значений на нуль при подсчете. По умолчанию установлен True.
     """
 
-    fig = plt.figure(figsize = (25, 15))
+    fig = plt.figure(num="Гистограмма распределения", figsize = (25, 15))
     fig.canvas.manager.window.showMaximized()
 
     if replace_minus_to_zero:

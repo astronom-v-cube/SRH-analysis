@@ -1,10 +1,10 @@
-from xrtpy.response.temperature_from_filter_ratio import temperature_from_filter_ratio
+from pathlib import Path
 
 import sunpy.map
-
-from pathlib import Path
-from sunpy.net import attrs as a
 from sunpy.net import Fido
+from sunpy.net import attrs as a
+from xrtpy.response.temperature_from_filter_ratio import \
+    temperature_from_filter_ratio
 
 result = Fido.search(
     a.Time("2023-03-20 07:27:09", "2023-03-20 07:40:00"), a.Instrument("xrt")
@@ -64,8 +64,7 @@ T_e = T_EM.Tmap
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-from sunpy.coordinates.sun import angular_radius, B0
+from sunpy.coordinates.sun import B0, angular_radius
 from sunpy.map import Map
 
 # To avoid error messages from sunpy we add metadata to the header:

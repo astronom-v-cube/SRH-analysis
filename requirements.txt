@@ -8,3 +8,4 @@ tqdm
 astropy
 sunpy
 xrtpy
+PyQt5

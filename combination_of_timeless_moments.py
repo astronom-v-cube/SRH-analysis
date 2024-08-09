@@ -1,9 +1,10 @@
 import os
 import shutil
 from datetime import datetime
+
 from tqdm import tqdm
 
-from analise_utils import OsOperations, Extract
+from analise_utils import Extract, OsOperations
 from config import directory
 
 extract = Extract()

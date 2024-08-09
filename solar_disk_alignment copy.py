@@ -1,17 +1,21 @@
-from matplotlib.colors import TwoSlopeNorm
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
-import mplcursors
-import matplotlib.colors as colors
-import numpy as np
-from astropy.io import fits
-import os, sys, re
+import logging
+import os
+import re
+import shutil
+import sys
 from os import listdir
 from os.path import isfile, join
-import shutil
-import logging
-from tqdm import tqdm
 from sys import platform
+
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import mplcursors
+import numpy as np
+from astropy.io import fits
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.widgets import Slider
+from tqdm import tqdm
+
 
 def logprint(msg):
     print(msg)

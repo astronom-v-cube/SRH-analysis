@@ -1,13 +1,17 @@
 import logging
-import os, sys
-from tqdm import tqdm
+import os
 import re
+import sys
+
 import matplotlib.pyplot as plt
-from matplotlib import ticker
-from matplotlib.ticker import ScalarFormatter, NullFormatter
 import numpy as np
 from astropy.io import fits
-from analise_utils import ZirinTb, FindIntensity, MplFunction, Monitoring, Extract, ConvertingArrays, OsOperations
+from matplotlib import ticker
+from matplotlib.ticker import NullFormatter, ScalarFormatter
+from tqdm import tqdm
+
+from analise_utils import (ConvertingArrays, Extract, FindIntensity,
+                           Monitoring, MplFunction, OsOperations, ZirinTb)
 
 extractor = Extract()
 zirin = ZirinTb()

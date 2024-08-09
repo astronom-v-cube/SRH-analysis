@@ -1,14 +1,16 @@
 import os
-import numpy as np
-from astropy.io import fits
+
 import matplotlib
-import tqdm
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from matplotlib import animation
-from matplotlib.colors import LogNorm, Normalize, TwoSlopeNorm
-import matplotlib.path as mpath
 import matplotlib.patches as patches
+import matplotlib.path as mpath
+import matplotlib.pyplot as plt
+import numpy as np
+import tqdm
+from astropy.io import fits
+from matplotlib import animation
+from matplotlib.animation import FuncAnimation
+from matplotlib.colors import LogNorm, Normalize, TwoSlopeNorm
+
 matplotlib.rcParams.update({'font.size': 20})
 
 # Путь к папке с данными

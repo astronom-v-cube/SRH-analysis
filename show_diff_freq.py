@@ -1,15 +1,16 @@
-from astropy.io import fits
-import numpy as np
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
-from matplotlib.colors import LogNorm, Normalize, TwoSlopeNorm
+import logging
 import os
 import re
-import matplotlib.patches as patches
-import logging
 
-from analise_utils import Monitoring, Extract
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+from astropy.io import fits
+from matplotlib.colors import LogNorm, Normalize, TwoSlopeNorm
+from matplotlib.patches import Circle
+from tqdm import tqdm
+
+from analise_utils import Extract, Monitoring
 
 Extract = Extract()
 Monitoring.start_log('logs')

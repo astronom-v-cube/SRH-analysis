@@ -1,12 +1,14 @@
-from matplotlib.colors import TwoSlopeNorm
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+import logging
+import sys
+
 import matplotlib.colors as colors
+import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
-import sys
-import logging
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.widgets import Slider
 from tqdm import tqdm
+
 from analise_utils import ArrayOperations, Extract, Monitoring, OsOperations
 
 Monitoring.start_log('log')
