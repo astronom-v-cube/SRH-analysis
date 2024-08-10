@@ -7,7 +7,7 @@ from analise_utils import ArrayOperations, Monitoring, MplFunction
 MplFunction.set_mpl_rc()
 Monitoring.start_log('logs')
 
-def create_distribution_histogram(input_file : str, replace_minus_to_zero = True):
+def create_distribution_histogram(input_file : str, replace_minus_to_zero = True, only_disk = False):
     """Построение гистограммы распределения значений яркостной температуры в ```.fits``` файле
 
     Args:
@@ -27,8 +27,11 @@ def create_distribution_histogram(input_file : str, replace_minus_to_zero = True
         header = hdul[0].header
         plt.xlim(data.min(), data.max())
 
+    if only_disk:
+        data = ArrayOperations.cut_sun_disk_data(data)
+
     Monitoring.header_info(header)
-    plt.hist(data.flatten(), bins='auto', edgecolor='black')
+    plt.hist(data.flatten(), bins=data.shape[0])
     plt.title('Гистограмма распределения')
     plt.xlabel('Значение яркостной температуры')
     plt.ylabel('Количество пикселей')
