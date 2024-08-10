@@ -336,6 +336,25 @@ class ArrayOperations:
             Monitoring.logprint("Ошибка! Тип данных не соответствует")
 
     @staticmethod
+    def cut_sun_disk_data(array : Union[list, np.ndarray], radius : int = 400) -> np.ndarray:
+        """Функция возвращает одномерный массив из элементов в окружности с центром в середине 2D-массива (вырезает солнечный диск). Размер окружности по умолчанию равен 400 px
+
+        Args:
+            array (Union[list, np.ndarray]): 2D массив с изображением Солнца
+            radius (int, optional): радиус вырезаемой окружности, по умолчанию равен ```400```
+
+        Returns:
+            np.ndarray: 1D массив значений внутри круга
+        """
+
+        center_x, center_y = array.shape[0]/2, array.shape[1]/2
+        x, y = np.indices(array.shape)
+        distance_from_center = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+        mask = distance_from_center <= radius
+        data_inside_circle = array[mask]
+        return data_inside_circle
+
+    @staticmethod
     def save_on_json(array : Union[list, np.ndarray], name_of_file : str):
         """Сохранение массива в файл ```.json```
         Args:
