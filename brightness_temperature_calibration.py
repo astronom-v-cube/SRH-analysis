@@ -1,6 +1,6 @@
-import json
 import logging
 import re
+import sys
 from collections import Counter
 
 import matplotlib.pyplot as plt
@@ -9,20 +9,18 @@ import numpy as np
 from astropy.io import fits
 from tqdm import tqdm
 
-from analise_utils import Monitoring, MplFunction, OsOperations, ZirinTb
+from analise_utils import (ArrayOperations, Monitoring, MplFunction,
+                           OsOperations, ZirinTb)
 from config import *
 
 
-def brightness_temperature_calibration(mode = 'calculation', postfix = 'calibrated_brightness', number_of_mode_values = 7):
+def brightness_temperature_calibration(mode, folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = None):
 
+    zirin = ZirinTb()
     MplFunction.set_mpl_rc()
     Monitoring.start_log('logs')
     logging.info(f'Start of the brightness temperature calibration program')
     logging.info(f'Path to files: {directory}')
-
-    zirin = ZirinTb()
-
-    correction_factor_brightness_array = []
 
     files, freqs = OsOperations.freq_sorted_files_in_folder(directory) if folder_mode == 'one_folder' else OsOperations.freq_sorted_1st_two_files_in_folders(directory)
 
@@ -34,54 +32,41 @@ def brightness_temperature_calibration(mode = 'calculation', postfix = 'calibrat
         for freq in tqdm(freqs, desc='Создание папок для частот'):
             OsOperations.create_place(f'{directory}_{postfix}/{freq}')
 
+    if mode == 'saved_settings':
+        try:
+            correction_factor_brightness_array = ArrayOperations.read_from_json(name_of_file)
+            if len(files)/2 != len(correction_factor_brightness_array):
+                Monitoring.logprint('Ошибка! Количество коррекционных коэффициентов не совпадает с количеством частот')
+                sys.exit()
+        except TypeError as err:
+            Monitoring.logprint(f'\nОшибка! Выбран режим `saved_settings`, но не указан файл настроек в аргументах функции!\nПодробнее: {err}')
+            sys.exit()
+    elif mode == 'calculation':
+        correction_factor_brightness_array = []
+    else:
+        Monitoring.logprint('Ошибка, неверный параметр `mode`')
+
     for index, image in enumerate(tqdm(files, desc='Общий прогресс выполнения')):
 
         if index % 2 == 0:
 
-            # Считывание файлов
             data1 = fits.open(f'{directory}/{freqs[index//2] if folder_mode == "folder_with_folders" else ""}/{files[index]}', ignore_missing_simple=True)
             data2 = fits.open(f'{directory}/{freqs[index//2] if folder_mode == "folder_with_folders" else ""}/{files[index + 1]}', ignore_missing_simple=True)
             header1 = data1[0].header
             header2 = data2[0].header
+            dateandtime = f'{header1['DATE-OBS']}' # T{header1['T-OBS']}
             img1 = data1[0].data
             img2 = data2[0].data
             data1.close()
             data2.close()
 
-            current_frequency = int(re.search(r'(?<=[_.])\d{4,5}(?=[_.])', str(files[index])).group())
-            Tb = zirin.getTbAtFrequency(current_frequency/1000) # получить яркостную температуру на частоте
+            if mode == 'calculation':
 
-            if mode == 'saved_settings':
+                current_frequency = int(re.search(r'(?<=[_.])\d{4,5}(?=[_.])', str(files[index])).group())
+                Tb = zirin.getTbAtFrequency(current_frequency/1000)
 
-                correction_factor_brightness_array = np.load(f'correction_factor_{directory[-15:-7]}.npy')
-                correction_factor_brightness = correction_factor_brightness_array[index//2]
-
-                fits.writeto(f'{directory}_calibrated_brightness/{files[index][:-4]}_calibrated_brightness.fits', img1 * correction_factor_brightness, overwrite=True, header=header1)
-                logging.info(f"Image {index+1}: {files[index]} - saved")
-                fits.writeto(f'{directory}_calibrated_brightness/{files[index + 1][:-4]}_calibrated_brightness.fits', img2 * correction_factor_brightness, overwrite=True, header=header2)
-                logging.info(f"Image {index+2}: {files[index + 1]} - saved")
-
-            elif mode == 'calculation':
-
-                # создаем массивы координат пикселей
-                x1, y1 = np.indices(img1.shape)
-                x2, y2 = np.indices(img2.shape)
-
-                # определяем параметры окружности
-                center_x, center_y = 512, 512
-                radius = 400
-
-                # вычисляем расстояние от каждой точки до центра окружности
-                distance_from_center1 = np.sqrt((x1 - center_x)**2 + (y1 - center_y)**2)
-                distance_from_center2 = np.sqrt((x2 - center_x)**2 + (y2 - center_y)**2)
-
-                # создаем маску, где значения True соответствуют точкам, входящим в окружность
-                mask1 = distance_from_center1 <= radius
-                mask2 = distance_from_center2 <= radius
-
-                # вырезаем данные внутри круга
-                data_inside_circle1 = img1[mask1]
-                data_inside_circle2 = img2[mask2]
+                data_inside_circle1 = ArrayOperations.cut_sun_disk_data(img1)
+                data_inside_circle2 = ArrayOperations.cut_sun_disk_data(img2)
                 data_inside_circle1 = np.round(data_inside_circle1, -2)
                 data_inside_circle2 = np.round(data_inside_circle2, -2)
 
@@ -106,23 +91,22 @@ def brightness_temperature_calibration(mode = 'calculation', postfix = 'calibrat
 
                 logging.info(f"For image {index + 1}, {index + 2} correction factor: {str(correction_factor_brightness)}")
 
-                if folder_mode == 'one_folder':
-                    fits.writeto(f'{directory}_calibrated_brightness/{files[index][:-4]}_calibrated_brightness.fits', img1 * correction_factor_brightness, overwrite=True, header=header1)
-                    logging.info(f"Image {index+1}: {files[index]} - saved")
-                    fits.writeto(f'{directory}_calibrated_brightness/{files[index + 1][:-4]}_calibrated_brightness.fits', img2 * correction_factor_brightness, overwrite=True, header=header2)
-                    logging.info(f"Image {index+2}: {files[index + 1]} - saved")
+            if folder_mode == 'one_folder':
+                fits.writeto(f'{directory}_calibrated_brightness/{files[index][:-4]}_calibrated_brightness.fits', img1 * correction_factor_brightness_array[index//2], overwrite=True, header=header1)
+                logging.info(f"Image {index+1}: {files[index]} - saved")
+                fits.writeto(f'{directory}_calibrated_brightness/{files[index + 1][:-4]}_calibrated_brightness.fits', img2 * correction_factor_brightness_array[index//2], overwrite=True, header=header2)
+                logging.info(f"Image {index+2}: {files[index + 1]} - saved")
 
-                elif folder_mode == 'folder_with_folders':
-                    all_files_in_freq, freq = OsOperations.freq_sorted_files_in_folder(f'{directory}/{freqs[index//2]}')
-                    for file in tqdm(all_files_in_freq, desc=f'Обработка файлов частоты {freqs[index//2]}', leave=False):
-                        hdul1 = fits.open(f'{directory}/{freqs[index//2]}/{file}', ignore_missing_simple=True)
-                        img1 = hdul1[0].data
-                        header1 = hdul1[0].header
-                        hdul1.close()
-                        fits.writeto(f'{directory}_{postfix}/{freqs[index//2]}/{file[:-4] if file[-1]== "t" else file[:-5]}_{postfix}.fits', img1 * correction_factor_brightness, overwrite=True, header=header1)
+            elif folder_mode == 'folder_with_folders':
+                all_files_in_freq, freq = OsOperations.freq_sorted_files_in_folder(f'{directory}/{freqs[index//2]}')
+                for file in tqdm(all_files_in_freq, desc=f'Обработка файлов частоты {freqs[index//2]}', leave=False):
+                    hdul1 = fits.open(f'{directory}/{freqs[index//2]}/{file}', ignore_missing_simple=True)
+                    img1 = hdul1[0].data
+                    header1 = hdul1[0].header
+                    hdul1.close()
+                    fits.writeto(f'{directory}_{postfix}/{freqs[index//2]}/{file[:-4] if file[-1]== "t" else file[:-5]}_{postfix}.fits', img1 * correction_factor_brightness_array[index//2], overwrite=True, header=header1)
 
-    # np.save(f'correction_factor_{directory[-15:-7]}.npy',correction_factor_brightness_array)
-    print(correction_factor_brightness_array)
+    ArrayOperations.save_on_json(correction_factor_brightness_array, f'BC_{dateandtime}')
 
     fig = plt.figure()
     ax = fig.gca()
@@ -133,4 +117,4 @@ def brightness_temperature_calibration(mode = 'calculation', postfix = 'calibrat
     plt.show()
 
 if __name__ == "__main__":
-    brightness_temperature_calibration(mode = 'calculation', postfix = 'calibrated_brightness', number_of_mode_values = 7)
+    brightness_temperature_calibration(mode = mode, folder_mode = folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = 'BC_20220113.json')

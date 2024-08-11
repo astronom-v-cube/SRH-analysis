@@ -1,8 +1,10 @@
-import matplotlib.pyplot as plt
-from astropy.io import fits
 import logging
 
+import matplotlib.pyplot as plt
+from astropy.io import fits
+
 from analise_utils import ArrayOperations, Monitoring, MplFunction
+
 
 def create_distribution_histogram(input_file : str, replace_minus_to_zero = True, only_disk = False):
     """Построение гистограммы распределения значений яркостной температуры в ```.fits``` файле

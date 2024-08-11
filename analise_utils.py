@@ -1,7 +1,7 @@
+import json
 import logging
 import os
 import re
-import json
 import shutil
 import warnings
 from typing import List, Tuple, Union
@@ -337,7 +337,7 @@ class ArrayOperations:
 
     @staticmethod
     def cut_sun_disk_data(array : Union[list, np.ndarray], radius : int = 400) -> np.ndarray:
-        """Функция возвращает одномерный массив из элементов в окружности с центром в середине 2D-массива (вырезает солнечный диск). Размер окружности по умолчанию равен 400 px
+        """Функция возвращает одномерный массив из элементов в окружности с центром в середине 2D-массива (вырезает солнечный диск). Радиус окружности по умолчанию равен 400 px
 
         Args:
             array (Union[list, np.ndarray]): 2D массив с изображением Солнца
