@@ -195,7 +195,45 @@ hljs.highlightAll();
             return np.array(array_data)
 
         else:
-            Monitoring.logprint("Ошибка! Тип данных не соответствует")</code></pre>
+            Monitoring.logprint("Ошибка! Тип данных не соответствует")
+
+    @staticmethod
+    def cut_sun_disk_data(array : Union[list, np.ndarray], radius : int = 400) -&gt; np.ndarray:
+        """Функция возвращает одномерный массив из элементов в окружности с центром в середине 2D-массива (вырезает солнечный диск). Радиус окружности по умолчанию равен 400 px
+
+        Args:
+            array (Union[list, np.ndarray]): 2D массив с изображением Солнца
+            radius (int, optional): радиус вырезаемой окружности, по умолчанию равен ```400```
+
+        Returns:
+            np.ndarray: 1D массив значений внутри круга
+        """
+
+        center_x, center_y = array.shape[0]/2, array.shape[1]/2
+        x, y = np.indices(array.shape)
+        distance_from_center = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+        mask = distance_from_center &lt;= radius
+        data_inside_circle = array[mask]
+        return data_inside_circle
+
+    @staticmethod
+    def save_on_json(array : Union[list, np.ndarray], name_of_file : str):
+        """Сохранение массива в файл ```.json```
+        Args:
+            array (Union[list, np.ndarray]): сохраняемый массив
+            name_of_file (str): имя файла ```.json```
+        """
+        with open(f'{name_of_file.translate({ord(i): None for i in ':-'})}.json', 'w') as file:
+            json.dump(array, file)
+
+    @staticmethod
+    def read_from_json(name_of_file : str):
+        """Чтение массива из файла ```.json```
+        Args:
+            name_of_file (str): имя файла ```.json```
+        """
+        with open(name_of_file, 'r') as file:
+            return json.load(file)</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -224,6 +262,24 @@ hljs.highlightAll();
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>если точка не находится внутри контура.</dd>
+</dl></div>
+</dd>
+<dt id="analise_utils.ArrayOperations.cut_sun_disk_data"><code class="name flex">
+<span>def <span class="ident">cut_sun_disk_data</span></span>(<span>array: Union[list, numpy.ndarray], radius: int = 400) ‑&gt; numpy.ndarray</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Функция возвращает одномерный массив из элементов в окружности с центром в середине 2D-массива (вырезает солнечный диск). Радиус окружности по умолчанию равен 400 px</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>array</code></strong> : <code>Union[list, np.ndarray]</code></dt>
+<dd>2D массив с изображением Солнца</dd>
+<dt><strong><code>radius</code></strong> : <code>int</code>, optional</dt>
+<dd>радиус вырезаемой окружности, по умолчанию равен <code>400</code></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.ndarray</code></dt>
+<dd>1D массив значений внутри круга</dd>
 </dl></div>
 </dd>
 <dt id="analise_utils.ArrayOperations.find_center_of_mass"><code class="name flex">
@@ -266,6 +322,17 @@ hljs.highlightAll();
 <dd>кортеж из трех значений: строкa <code>max_row</code> и столбец <code>max_col</code> максимального значения, а также значение <code>max_value</code> самого большого элемента в указанной области.</dd>
 </dl></div>
 </dd>
+<dt id="analise_utils.ArrayOperations.read_from_json"><code class="name flex">
+<span>def <span class="ident">read_from_json</span></span>(<span>name_of_file: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Чтение массива из файла <code>.json</code></p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name_of_file</code></strong> : <code>str</code></dt>
+<dd>имя файла <code>.json</code></dd>
+</dl></div>
+</dd>
 <dt id="analise_utils.ArrayOperations.replace_minus_to_zero"><code class="name flex">
 <span>def <span class="ident">replace_minus_to_zero</span></span>(<span>data: Union[str, numpy.ndarray]) ‑&gt; Tuple[numpy.ndarray, astropy.io.fits.header.Header]</span>
 </code></dt>
@@ -282,6 +349,19 @@ hljs.highlightAll();
 <dd>очищенный от отрицательных значений массив</dd>
 <dt><code>Header</code></dt>
 <dd>исходный заголовок <code>.fits</code> файла для возможности его пересохранения</dd>
+</dl></div>
+</dd>
+<dt id="analise_utils.ArrayOperations.save_on_json"><code class="name flex">
+<span>def <span class="ident">save_on_json</span></span>(<span>array: Union[list, numpy.ndarray], name_of_file: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Сохранение массива в файл <code>.json</code></p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>array</code></strong> : <code>Union[list, np.ndarray]</code></dt>
+<dd>сохраняемый массив</dd>
+<dt><strong><code>name_of_file</code></strong> : <code>str</code></dt>
+<dd>имя файла <code>.json</code></dd>
 </dl></div>
 </dd>
 </dl>
@@ -1194,9 +1274,12 @@ C: вклад компонента характерен для процессо�
 <h4><code><a href="#analise_utils.ArrayOperations" title="analise_utils.ArrayOperations">ArrayOperations</a></code></h4>
 <ul class="">
 <li><code><a href="#analise_utils.ArrayOperations.calculate_weighted_centroid" title="analise_utils.ArrayOperations.calculate_weighted_centroid">calculate_weighted_centroid</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.cut_sun_disk_data" title="analise_utils.ArrayOperations.cut_sun_disk_data">cut_sun_disk_data</a></code></li>
 <li><code><a href="#analise_utils.ArrayOperations.find_center_of_mass" title="analise_utils.ArrayOperations.find_center_of_mass">find_center_of_mass</a></code></li>
 <li><code><a href="#analise_utils.ArrayOperations.find_max_around_point" title="analise_utils.ArrayOperations.find_max_around_point">find_max_around_point</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.read_from_json" title="analise_utils.ArrayOperations.read_from_json">read_from_json</a></code></li>
 <li><code><a href="#analise_utils.ArrayOperations.replace_minus_to_zero" title="analise_utils.ArrayOperations.replace_minus_to_zero">replace_minus_to_zero</a></code></li>
+<li><code><a href="#analise_utils.ArrayOperations.save_on_json" title="analise_utils.ArrayOperations.save_on_json">save_on_json</a></code></li>
 </ul>
 </li>
 <li>
