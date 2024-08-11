@@ -14,7 +14,16 @@ from analise_utils import (ArrayOperations, Monitoring, MplFunction,
 from config import *
 
 
-def brightness_temperature_calibration(mode, folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = None):
+def brightness_temperature_calibration(mode : str = mode, folder_mode : str = folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = None):
+    """Калибровка яркостной температуры изображений. Производится путем выборки некоторого количества наиболее встречаемых округленных до сотен значений яркостной температуры спокойного Солнца и домножением изображения на расчитанный поправочный коэффициент
+
+    Args:
+        mode (str, optional): режим работы, расчет или использование сохраненных настроек, устанавливается в 'config.py'
+        folder_mode (str, optional): режим работы с папками, устанавливается в 'config.py'
+        postfix (str, optional): что будет добавлено в названия к обработанным файлам, по умолчанию  'calibrated_brightness'.
+        number_of_mode_values (int, optional): количество усредняемых наиболее встречающихся значений яркостной температуры в изображении, по умолчанию 7
+        name_of_file (str, optional): имя файла с настройками при использовании режима `saved_settings`, по умолчанию None.
+    """
 
     zirin = ZirinTb()
     MplFunction.set_mpl_rc()

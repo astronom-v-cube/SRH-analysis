@@ -6,12 +6,13 @@ from astropy.io import fits
 from analise_utils import ArrayOperations, Monitoring, MplFunction
 
 
-def create_distribution_histogram(input_file : str, replace_minus_to_zero = True, only_disk = False):
+def create_distribution_histogram(input_file : str, replace_minus_to_zero = True, only_disk = True):
     """Построение гистограммы распределения значений яркостной температуры в ```.fits``` файле
 
     Args:
         input_file (str): путь к файлу
-        replace_minus_to_zero (bool, optional): параметр, регулирующий замену отрицательных значений на нуль при подсчете. По умолчанию установлен True.
+        replace_minus_to_zero (bool, optional): параметр, регулирующий замену отрицательных значений на нуль при подсчете. По умолчанию установлен True
+        only_disk (bool, optional): параметр, регулирующий использование только области солнечного диска, или всего изображения. По умолчанию установлен True
     """
     MplFunction.set_mpl_rc()
     Monitoring.start_log('logs')
