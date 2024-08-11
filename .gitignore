@@ -134,3 +134,4 @@ logs.log
 datas_about_flare/*
 
 test.py
+config.py
