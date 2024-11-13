@@ -1,0 +1,3 @@
+[submodule "SRH_shift_maps"]
+	path = SRH_shift_maps
+	url = git@github.com:astronom-v-cube/SRH_shift_maps.git
