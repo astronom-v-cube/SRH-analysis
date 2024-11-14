@@ -8,6 +8,7 @@ from astropy.io import fits
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.widgets import Slider
 from tqdm import tqdm
+from scipy.ndimage import shift
 
 from analise_utils import ArrayOperations, Extract, Monitoring, OsOperations
 from SRH_shift_maps.SRH_ShiftModule import find_min_deviation_with_correlation
@@ -80,6 +81,7 @@ elif mode == 'correlation':
     zero_I = intensity_maps_list[0]
     for i in intensity_maps_list[1:]:
         best_delta, minimum = find_min_deviation_with_correlation(i[y_limit[0]:y_limit[1], x_limit[0]:x_limit[1]], zero_I[y_limit[0]:y_limit[1], x_limit[0]:x_limit[1]])
+        setting_of_alignes.append(best_delta)
         setting_of_alignes.append(best_delta)
 
 elif mode == 'interactive':
@@ -266,8 +268,12 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
                 img1 = hdul1[0].data
                 header1 = hdul1[0].header
                 hdul1.close()
-                img1 = np.roll(img1, dx, axis=1)
-                img1 = np.roll(img1, dy, axis=0)
+
+                if mode == 'correlation':
+                    img1 = shift(img1, dx, dy)
+                else:
+                    img1 = np.roll(img1, dx, axis=1)
+                    img1 = np.roll(img1, dy, axis=0)
                 fits.writeto(f'{directory}_{postfix}/{freqs[i//2]}/{file[:-4] if file[-1]== "t" else file[:-5]}_{postfix}.fits', img1, overwrite=True, header=header1)
                 logging.info(f"Image: {file} - saved")
 
