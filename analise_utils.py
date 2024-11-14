@@ -354,24 +354,24 @@ class ArrayOperations:
         data_inside_circle = array[mask]
         return data_inside_circle
 
-    @staticmethod
-    def save_on_json(array : Union[list, np.ndarray], name_of_file : str):
-        """Сохранение массива в файл ```.json```
-        Args:
-            array (Union[list, np.ndarray]): сохраняемый массив
-            name_of_file (str): имя файла ```.json```
-        """
-        with open(f'{name_of_file.translate({ord(i): None for i in ':-'})}.json', 'w') as file:
-            json.dump(array, file)
+    # @staticmethod
+    # def save_on_json(array : Union[list, np.ndarray], name_of_file : str):
+    #     """Сохранение массива в файл ```.json```
+    #     Args:
+    #         array (Union[list, np.ndarray]): сохраняемый массив
+    #         name_of_file (str): имя файла ```.json```
+    #     """
+    #     with open(f'{name_of_file.translate({ord(i): None for i in ':-'})}.json', 'w') as file:
+    #         json.dump(array, file)
 
-    @staticmethod
-    def read_from_json(name_of_file : str):
-        """Чтение массива из файла ```.json```
-        Args:
-            name_of_file (str): имя файла ```.json```
-        """
-        with open(name_of_file, 'r') as file:
-            return json.load(file)
+    # @staticmethod
+    # def read_from_json(name_of_file : str):
+    #     """Чтение массива из файла ```.json```
+    #     Args:
+    #         name_of_file (str): имя файла ```.json```
+    #     """
+    #     with open(name_of_file, 'r') as file:
+    #         return json.load(file)
 
 class MplFunction:
 

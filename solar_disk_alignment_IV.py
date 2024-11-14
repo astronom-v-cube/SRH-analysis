@@ -10,6 +10,7 @@ from matplotlib.widgets import Slider
 from tqdm import tqdm
 
 from analise_utils import ArrayOperations, Extract, Monitoring, OsOperations
+from SRH_shift_maps.SRH_ShiftModule import find_min_deviation_with_correlation
 
 Monitoring.start_log('log')
 extract = Extract()
@@ -19,10 +20,10 @@ logging.info(f'Start program alignment of the solar disk')
 ##########
 # dateandtime = '20220120T060200copy'
 # directory = f"D:/datasets/20.01.22/times/{dateandtime}"
-directory = f"A:/flags"
-file_settings_name = '14.05.24'
+directory = f"/mnt/astro/14may"
+file_settings_name = '14_05_24'
 folder_mode = 'folder_with_folders'    # 'one_folder' /one_time_moment/ or 'folder_with_folders' /many__time_moment/
-mode = 'interactive'          # 'saved_settings' or 'interactive'
+mode = 'correlation'          # 'saved_settings' or 'interactive' or 'correlation'
 method = 'WA'                # 'MAP' /max around point/ or 'COM' /center of mass/ or 'WA' /weighted average/
 postfix = 'WA_aligned' if method == 'WA' else 'COM_aligned or MAP...'
 vcenter = 5000
@@ -38,7 +39,20 @@ setting_of_alignes = []
 logging.info(f'Path to files: {directory}')
 
 files, freqs = OsOperations.freq_sorted_files_in_folder(directory) if folder_mode == 'one_folder' else OsOperations.freq_sorted_1st_two_files_in_folders(directory)
+
 iterable = range(0, len(files), 2)
+intensity_maps_list = []
+
+for i in iterable:
+
+    hdul1 = fits.open(f'{directory}/{freqs[i//2] if folder_mode == "folder_with_folders" else ""}/{files[i]}', ignore_missing_simple=True)
+    hdul2 = fits.open(f'{directory}/{freqs[(i+1)//2] if folder_mode == "folder_with_folders" else ""}/{files[i+1]}', ignore_missing_simple=True)
+    data1 = hdul1[0].data
+    data2 = hdul2[0].data
+
+    I = data1 + data2
+    intensity_maps_list.append(I)
+
 
 logging.info(f'Find {len(files)} files')
 logging.info(f'List files: \n {files}')
@@ -61,6 +75,12 @@ def update(val):
 
 if mode == 'saved_settings':
     setting_of_alignes = np.load(f'{file_settings_name}.npy')
+
+elif mode == 'correlation':
+    zero_I = intensity_maps_list[0]
+    for i in intensity_maps_list[1:]:
+        best_delta, minimum = find_min_deviation_with_correlation(i[y_limit[0]:y_limit[1], x_limit[0]:x_limit[1]], zero_I[y_limit[0]:y_limit[1], x_limit[0]:x_limit[1]])
+        setting_of_alignes.append(best_delta)
 
 elif mode == 'interactive':
 
@@ -120,6 +140,8 @@ elif mode == 'interactive':
         else:
             Monitoring.logprint(f"No double click coordinates recorded")
             sys.exit()
+
+print(setting_of_alignes)
 
 def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area', area : int = None):
 
