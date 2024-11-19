@@ -36,10 +36,10 @@ def find_nearest_files(src_folder, target_time, dest_folder):
 
         if lcp_nearest_file:
             shutil.copy(lcp_nearest_file, dest_folder)
-            print(f'Файл {lcp_nearest_file} перемещен')
+            print(f'Файл {lcp_nearest_file} скопирован')
         if rcp_nearest_file:
             shutil.copy(rcp_nearest_file, dest_folder)
-            print(f'Файл {rcp_nearest_file} перемещен')
+            print(f'Файл {rcp_nearest_file} скопирован')
 
 if __name__ == "__main__":
     find_nearest_files(directory, target_time, destination_folder)
