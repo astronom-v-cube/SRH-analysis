@@ -14,7 +14,7 @@ from analise_utils import (ArrayOperations, Monitoring, MplFunction,
 from config import *
 
 
-def brightness_temperature_calibration(mode : str = mode, folder_mode : str = folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = None):
+def brightness_temperature_calibration(mode : str = aligned_mode, folder_mode : str = folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = None):
     """Калибровка яркостной температуры изображений. Производится путем выборки некоторого количества наиболее встречаемых округленных до сотен значений яркостной температуры спокойного Солнца и домножением изображения на расчитанный поправочный коэффициент
 
     Args:
@@ -126,4 +126,4 @@ def brightness_temperature_calibration(mode : str = mode, folder_mode : str = fo
     plt.show()
 
 if __name__ == "__main__":
-    brightness_temperature_calibration(mode = mode, folder_mode = folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = 'BC_20220113.json')
+    brightness_temperature_calibration(mode = aligned_mode, folder_mode = folder_mode, postfix = 'calibrated_brightness', number_of_mode_values = 7, name_of_file = 'BC_20220113.json')
