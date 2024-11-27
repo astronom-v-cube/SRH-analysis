@@ -85,61 +85,69 @@ def delete_files(file_paths):
         except Exception as e:
             print(f"Ошибка при удалении файла {file_path}: {e}")
 
-path_to_srh = '/mnt/astro/14may_new_612/6000/srh_20240514T014016_6000_LCP.fit'
-date_object = dt.strptime(path_to_srh.split('/')[-1].split('_')[-3], "%Y%m%dT%H%M%S")
-time = Time(date_object)
+def create_coordinate_binding_img(path_to_srh):
 
-hmi_query = Fido.search(a.Time(time - 40 * u.second, time + 40 * u.second),
-                        a.Instrument('HMI'),
-                        a.Physobs('intensity'),
-                        a.Wavelength(6173 * u.angstrom))
+    date_object = dt.strptime(path_to_srh.split('/')[-1].split('_')[-3], "%Y%m%dT%H%M%S")
+    time = Time(date_object)
 
-hmi_files = Fido.fetch(hmi_query)
-hmi_file = hmi_files[0]
+    hmi_query = Fido.search(a.Time(time - 40 * u.second, time + 40 * u.second),
+                            a.Instrument('HMI'),
+                            a.Physobs('intensity'),
+                            a.Wavelength(6173 * u.angstrom))
 
-# Попытка сделать модель спадания яркости и ее компенсацию
-hmi_map = sunpy.map.Map(hmi_file)
-dimensions = (hmi_map.dimensions.x.value, hmi_map.dimensions.y.value)
-# Создание сетки пиксельных координат
-yy, xx = np.meshgrid(np.arange(dimensions[1]), np.arange(dimensions[0]))
-center_x = hmi_map.reference_pixel.x.value
-center_y = hmi_map.reference_pixel.y.value
-r = np.sqrt((xx - center_x) ** 2 + (yy - center_y) ** 2)
-# Радиус солнечного диска в пикселях
-print(r)
-radius = (hmi_map.rsun_obs.to('arcsec').value / hmi_map.scale.axis1.value) + 25
-# Пример модели лимбного потемнения: I = I0 * (1 - u * (1 - sqrt(1 - (r/R)^2)))
-u = 0.56  # Коэффициент лимбного потемнения (подбирается для конкретной длины волны)
-limb_darkening_model = 1 - u * (1 - np.sqrt(1 - (r / radius) ** 2))
-normalized_data = hmi_map.data / limb_darkening_model
-normalized_map = sunpy.map.Map(normalized_data, hmi_map.meta)
-normalized_map.save('circle_normalized.fits', overwrite=True)
+    hmi_files = Fido.fetch(hmi_query)
+    hmi_file = hmi_files[0]
+    hmi_data = fits.open(hmi_file)[1]
+    srh_data = fits.open(path_to_srh)[0]
+    array, footprint = reproject_interp(hmi_data, srh_data.header)
+    new_coord_head = merge_fits_headers(hmi_data.header, srh_data.header)
+    hmi_data = sunpy.map.Map(array, new_coord_head)
 
-hmi_data = fits.open('circle_normalized.fits')[0]
-# hmi_data = fits.open(hmi_file)[1]
-srh = fits.open(path_to_srh)[0]
-array, footprint = reproject_interp(hmi_data, srh.header)
+    # Попытка сделать модель спадания яркости и ее компенсацию
+    hmi_map = sunpy.map.Map(hmi_file)
+    dimensions = (hmi_map.dimensions.x.value, hmi_map.dimensions.y.value)
+    # Создание сетки пиксельных координат
+    yy, xx = np.meshgrid(np.arange(dimensions[1]), np.arange(dimensions[0]))
+    center_x = hmi_map.reference_pixel.x.value
+    center_y = hmi_map.reference_pixel.y.value
+    r = np.sqrt((xx - center_x) ** 2 + (yy - center_y) ** 2)
+    # Радиус солнечного диска в пикселях
+    print(r)
+    radius = (hmi_map.rsun_obs.to('arcsec').value / hmi_map.scale.axis1.value) + 25
+    # Пример модели лимбного потемнения: I = I0 * (1 - u * (1 - sqrt(1 - (r/R)^2)))
+    u = 0.56  # Коэффициент лимбного потемнения (подбирается для конкретной длины волны)
+    limb_darkening_model = 1 - u * (1 - np.sqrt(1 - (r / radius) ** 2))
+    normalized_data = hmi_map.data / limb_darkening_model
+    normalized_map = sunpy.map.Map(normalized_data, hmi_map.meta)
+    normalized_map.save('circle_normalized.fits', overwrite=True)
 
-array = np.nan_to_num(array, nan=0)
-smoothed_data_hmi = gaussian_filter(array, sigma=(7, 7))
-smoothed_data_hmi = normalize_array((r)/4, smoothed_data_hmi, srh.data.max(), 0)
+    hmi_data = fits.open('circle_normalized.fits')[0]
+    
+    
 
-new_coord_head = merge_fits_headers(hmi_data.header, srh.header)
-fits.writeto('smooth_hmi.fits', smoothed_data_hmi, srh.header, overwrite=True)
+    array = np.nan_to_num(array, nan=0)
+    smoothed_data_hmi = gaussian_filter(array, sigma=(7, 7))
+    smoothed_data_hmi = normalize_array(r, smoothed_data_hmi, srh_data.data.max(), 0)
 
-hmi_map = sunpy.map.Map('smooth_hmi.fits')
-srh_map = sunpy.map.Map('/mnt/astro/14may_new_612/6000/srh_20240514T014016_6000_LCP.fit')
-# delete_files(hmi_files)
+    
+    fits.writeto('smooth_hmi.fits', smoothed_data_hmi, srh_data.header, overwrite=True)
 
-plt.imshow(smoothed_data_hmi, cmap='plasma', origin='lower')
-plt.colorbar(label='Intensity (Negative)')
-plt.show()
+    hmi_map = sunpy.map.Map('smooth_hmi.fits')
+    srh_map = sunpy.map.Map('/mnt/astro/14may_new_612/6000/srh_20240514T014016_6000_LCP.fit')
+    # delete_files(hmi_files)
+
+    plt.imshow(smoothed_data_hmi, cmap='plasma', origin='lower')
+    plt.colorbar(label='Intensity (Negative)')
+    plt.show()
 
 
-fig = plt.figure()
-ax1 = fig.add_subplot(projection=hmi_map)
-srh_map.plot_settings['norm'] = matplotlib.colors.TwoSlopeNorm(vmin=0, vcenter=1e5, vmax=8e6)
-srh_map.plot_settings['cmap'] = matplotlib.colormaps['plasma']
-hmi_map.plot(axes=ax1, alpha=0.7)
-srh_map.plot(axes=ax1, alpha=0.5)
-plt.show()
+    fig = plt.figure()
+    ax1 = fig.add_subplot(projection=hmi_map)
+    srh_map.plot_settings['norm'] = matplotlib.colors.TwoSlopeNorm(vmin=0, vcenter=1e5, vmax=8e6)
+    srh_map.plot_settings['cmap'] = matplotlib.colormaps['plasma']
+    hmi_map.plot(axes=ax1, alpha=0.7)
+    srh_map.plot(axes=ax1, alpha=0.5)
+    plt.show()
+
+if __name__ == '__main__':
+    create_coordinate_binding_img(path_to_srh = 'test_dataset/srh_20220113T031122_6200_LCP.fit')
