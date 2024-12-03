@@ -1,11 +1,14 @@
+from ast import Tuple
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from config import *
 from matplotlib.widgets import Slider
 from matplotlib.colors import TwoSlopeNorm
 from analise_utils import Monitoring, OsOperations
+from scipy.ndimage import shift
 import logging
 import sys
+import numpy as np
 
 class Alignment():
 
@@ -80,7 +83,7 @@ class Alignment():
             if len(self.click_coords) > 0:
                 Monitoring.logprint(f"For image {i+1} last double click coordinates: {str(self.click_coords[-1])}")
                 self.coordinates_of_control_point.append(self.click_coords[-1])
-                self.coordinates_of_control_point.append(self.click_coords[-1])
+                # self.coordinates_of_control_point.append(self.click_coords[-1])
                 plt.close()
 
             else:
@@ -102,3 +105,20 @@ class Alignment():
             intensity_maps_list.append(I)
 
         return intensity_maps_list
+
+    def crop_map(self, map : np.ndarray) -> np.ndarray:
+        return map[y_limit[0]:y_limit[1], x_limit[0]:x_limit[1]]
+
+    @staticmethod
+    def roll_shift(img1 : np.ndarray, img2 : np.ndarray, dx : int, dy : int) -> tuple:
+        img1 = np.roll(img1, dx, axis=1)
+        img1 = np.roll(img1, dy, axis=0)
+        img2 = np.roll(img2, dx, axis=1)
+        img2 = np.roll(img2, dy, axis=0)
+        return img1, img2
+
+    @staticmethod
+    def interpolation_shift(img1 : np.ndarray, img2 : np.ndarray, dx : float, dy : float) -> tuple:
+        img1 = shift(img1, (dx, dy))
+        img2 = shift(img2, (dx, dy))
+        return img1, img2

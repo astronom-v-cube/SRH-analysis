@@ -17,9 +17,9 @@ Monitoring.start_log('logs')
 logging.info(f'Start program show of the solar on difference frequency')
 
 # Каталог из которого будем брать файлы
-directory = "D:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_aligned"
-directory = "D:\datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned"
-directory = "A:/14.05.24_times/20240514T020220"
+# directory = "D:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_aligned"
+# directory = "D:\datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned"
+directory = "/mnt/astro/14may_new_612_times/20240514T014200_OWM_aligned"
 vcenter = 5000
 
 logging.info(f'Path to files: {directory}')
@@ -41,7 +41,7 @@ np.set_printoptions(threshold=np.inf)
 stroka_1, stroka_2, stolbec_1, stolbec_2 = 0, 1024, 0, 1024
 # stroka_1, stroka_2, stolbec_1, stolbec_2 = 543, 583, 873, 913
 
-def multiple_crope_images_display(input_matrix_list_files, NX=12, NY=7):
+def multiple_crope_images_display(input_matrix_list_files, NX=4, NY=4):
     # https://teletype.in/@pythontalk/matplotlib_subplot_tutorial
     fig, axs = plt.subplots(NY, NX, sharex=True, sharey=True, figsize=(NX*3,NY*3))
 
@@ -57,7 +57,7 @@ def multiple_crope_images_display(input_matrix_list_files, NX=12, NY=7):
         r_or_l = re.search(r'(RCP|LCP|R|L)', str(input_matrix_list_files[i]))
         # print(f'рисую в клетке {i+1}')
         # ax.imshow((fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2], origin='lower', cmap='plasma', interpolation='gaussian')
-        ax.imshow((fits_image_file)[0:1024, 0:1024], origin='lower', cmap='plasma', norm=TwoSlopeNorm(vmin=0, vcenter=vcenter, vmax=200000), extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]])
+        ax.imshow((fits_image_file)[410:465, 262:312], origin='lower', cmap='plasma', norm=TwoSlopeNorm(vmin=0, vcenter=vcenter, vmax=300000), extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]])
 
 
         # Создание контуров только для определенной части изображения
