@@ -152,8 +152,9 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
         # if aligned_mode == 'saved_settings':
         #     dx, dy = setting_of_alignes[i-2][0], setting_of_alignes[i-2][1]
 
+        dx, dy = setting_of_alignes[i//2][0], setting_of_alignes[i//2][1]
+
         if folder_mode == 'one_folder':
-            dx, dy = setting_of_alignes[i//2][0], setting_of_alignes[i//2][1]
             if interpolation:
                 img1, img2 = alignment.interpolation_shift(img1, img2, dx, dy)
             else:
@@ -163,27 +164,27 @@ def alignment_sun_disk(files : list = files, method : str = 'search_max_in_area'
             fits.writeto(f'{directory}_{postfix}/{files[i+1][:-5] if files[i+1][-1] == "s" else files[i+1][:-4]}_{postfix}.fits', img2, overwrite=True, header=header2)
             logging.info(f"Image {i+2}: {files[i+1]} - saved")
 
-        # elif folder_mode == 'folder_with_folders':
-        #     all_files_in_freq, freq = OsOperations.freq_sorted_files_in_folder(f'{directory}/{freqs[i//2]}')
-        #     for file in tqdm(all_files_in_freq, desc=f'Обработка файлов частоты {freqs[i//2]}', leave=False):
-        #         hdul1 = fits.open(f'{directory}/{freqs[i//2]}/{file}', ignore_missing_simple=True)
-        #         img1 = hdul1[0].data
-        #         header1 = hdul1[0].header
-        #         hdul1.close()
+        elif folder_mode == 'folder_with_folders':
+            all_files_in_freq, freq = OsOperations.freq_sorted_files_in_folder(f'{directory}/{freqs[i//2]}')
+            for file in tqdm(all_files_in_freq, desc=f'Обработка файлов частоты {freqs[i//2]}', leave=False):
+                hdul1 = fits.open(f'{directory}/{freqs[i//2]}/{file}', ignore_missing_simple=True)
+                img = hdul1[0].data
+                header1 = hdul1[0].header
+                hdul1.close()
+                if interpolation:
+                    img = alignment.interpolation_shift(img, None, dx, dy)
+                else:
+                    img = alignment.roll_shift(img, None, dx, dy)
 
-        #         if aligned_mode == 'correlation':
-        #             img1 = shift(img1, dx, dy)
-        #         else:
-        #             img1 = np.roll(img1, dx, axis=1)
-        #             img1 = np.roll(img1, dy, axis=0)
-        #         fits.writeto(f'{directory}_{postfix}/{freqs[i//2]}/{file[:-4] if file[-1]== "t" else file[:-5]}_{postfix}.fits', img1, overwrite=True, header=header1)
-        #         logging.info(f"Image: {file} - saved")
+                fits.writeto(f'{directory}_{postfix}/{freqs[i//2]}/{file[:-4] if file[-1]== "t" else file[:-5]}_{postfix}.fits', img, overwrite=True, header=header1)
+                logging.info(f"Image: {file} - saved")
 
     Monitoring.logprint('Finish program alignment of the solar disk')
     print('For more details: read file "logs.log"')
 
-    if aligned_mode == 'interactive':
-        np.save(f'{file_settings_name}.npy', setting_of_alignes)
+    if saved_settings:
+
+        ArrayOperations.save_on_json(setting_of_alignes, file_settings_name)
         print(setting_of_alignes)
 
         square_psf_list = sorted(square_psf, reverse=True)

@@ -113,12 +113,18 @@ class Alignment():
     def roll_shift(img1 : np.ndarray, img2 : np.ndarray, dx : int, dy : int) -> tuple:
         img1 = np.roll(img1, dx, axis=1)
         img1 = np.roll(img1, dy, axis=0)
-        img2 = np.roll(img2, dx, axis=1)
-        img2 = np.roll(img2, dy, axis=0)
-        return img1, img2
+        if img2 != None:
+            img2 = np.roll(img2, dx, axis=1)
+            img2 = np.roll(img2, dy, axis=0)
+            return img1, img2
+        else:
+            return img1
 
     @staticmethod
     def interpolation_shift(img1 : np.ndarray, img2 : np.ndarray, dx : float, dy : float) -> tuple:
         img1 = shift(img1, (dx, dy))
-        img2 = shift(img2, (dx, dy))
-        return img1, img2
+        if img2 != None:
+            img2 = shift(img2, (dx, dy))
+            return img1, img2
+        else:
+            return img1
