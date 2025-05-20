@@ -624,6 +624,63 @@ class OsOperations:
         freqs = sorted(list(freqs))
         return files, freqs
 
+class FitsOperations:
+
+    @staticmethod
+    def transform_fits_name(anf_file_name: str, polariz: str = None) -> str:
+        """Перевод имени файла из системы имен кода Анфиногентова в систему имен кода Глобы
+
+        Args:
+            anf_file_name (str): имя файла в кодах Анфиногентова
+            polariz (str, optional): поляризация (указывается вручную в случае перевода IV в RL)
+
+        Returns:
+            str: имя файла в кодах Глобы
+        """
+
+        anf_cut_name = anf_file_name[:-5].split('_')
+
+        if polariz == None:
+            globa_file_name = f'srh_{anf_cut_name[4]}T{anf_cut_name[5]}_{anf_cut_name[2].split('.')[0]}{anf_cut_name[2].split('.')[1][0:2]}0_{anf_cut_name[3]}.fits'
+        else:
+            globa_file_name = f'srh_{anf_cut_name[4]}T{anf_cut_name[5]}_{anf_cut_name[2].split('.')[0]}{anf_cut_name[2].split('.')[1][0:2]}0_{polariz}.fits'
+
+        return globa_file_name
+
+    @staticmethod
+    def IV2RL(directory: str, anf_file_name_I: str, anf_file_name_V: str, deleteIV: bool = True):
+        """Функция перевода файлов из IV (интенсивность и поляризация) в RL (правая и левая поляризация)
+
+        Args:
+            directory (str): путь до директории с файлами
+            anf_file_name_I (str): имя I-файла
+            anf_file_name_V (str): имя М-файла
+            deleteIV (bool, optional): удалять ли исходные IV файлы (по умолчанию - да)
+        """
+
+        I_full_path = os.path.join(directory, anf_file_name_I)
+        V_full_path = os.path.join(directory, anf_file_name_V)
+        hdul1 = fits.open(I_full_path, ignore_missing_simple=True)
+        hdul2 = fits.open(V_full_path, ignore_missing_simple=True)
+        I = hdul1[0].data
+        V = hdul2[0].data
+        header1 = hdul1[0].header
+        header2 = hdul2[0].header
+        hdul1.close()
+        hdul2.close()
+
+        R = I + V
+        L = I - V
+        header1['POLARIZ'] = 'RCP'
+        header2['POLARIZ'] = 'LCP'
+
+        fits.writeto(f'{directory}_RL/{FitsOperations.transform_fits_name(anf_file_name_I, "RCP")}.fits', R, overwrite=True, header=header1)
+        fits.writeto(f'{directory}_RL/{FitsOperations.transform_fits_name(anf_file_name_V, "LCP")}.fits', L, overwrite=True, header=header2)
+
+        if deleteIV:
+            os.remove(I_full_path)
+            os.remove(V_full_path)
+
 class Properties:
 
     @staticmethod
