@@ -2,8 +2,12 @@ import os
 
 from bs4 import BeautifulSoup
 
-os.system('cd ..')
-os.remove('docs/index.html')
+# os.system('cd ..')
+
+try:
+    os.remove('docs/index.html')
+except Exception as err:
+    print(err)
 
 os.system('python -m pdoc --html --force --output-dir docs analise_utils.py')
 
