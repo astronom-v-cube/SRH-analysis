@@ -5,6 +5,7 @@ import re
 import shutil
 import warnings
 from typing import List, Tuple, Union
+from matplotlib.path import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -231,15 +232,15 @@ class ArrayOperations:
         # Get the indices of the smaller region around the point
         row, col = point
         half_size = size // 2
-        row_indices = range(max(0, row - half_size), min(matrix.shape[0], row + half_size + 1))
-        col_indices = range(max(0, col - half_size), min(matrix.shape[1], col + half_size + 1))
+        row_indices = np.arange(max(0, row - half_size), min(matrix.shape[0], row + half_size + 1))
+        col_indices = np.arange(max(0, col - half_size), min(matrix.shape[1], col + half_size + 1))
 
         # Get the smaller region from the original matrix
         smaller_matrix = matrix[np.ix_(row_indices, col_indices)]
         max_value = np.max(smaller_matrix)
 
         # Calculate threshold as a fraction of the maximum value in the matrix
-        threshold = np.max(smaller_matrix) * 0.1  # for example, we can use 10% of the maximum value as threshold
+        threshold = max_value * 0.1  # for example, we can use 10% of the maximum value as threshold
 
         # Find indices of elements above the threshold
         high_value_indices = np.where(smaller_matrix > threshold)
@@ -273,15 +274,19 @@ class ArrayOperations:
         """
         if xy_limits != None:
             crop_matrix = matrix[xy_limits[1][0]:xy_limits[1][1], xy_limits[0][0]:xy_limits[0][1]]
+            contours = plt.contour(crop_matrix, levels=[crop_matrix.max() * target_level], extent=[xy_limits[0][0], xy_limits[0][1], xy_limits[1][0], xy_limits[1][1]])
         else:
             crop_matrix = matrix
-        contours = plt.contour(crop_matrix, levels=[crop_matrix.max() * target_level], extent=[xy_limits[0][0], xy_limits[0][1], xy_limits[1][0], xy_limits[1][1]])
+            contours = plt.contour(crop_matrix, levels=[crop_matrix.max() * target_level])
 
         # Найти контур нужного уровня, содержащий точку
-        point_in_contour = False
-        for collection, level in zip(contours.collections, contours.levels):
-            if level == crop_matrix.max() * target_level:
-                for path in collection.get_paths():
+        point_in_contour = False  # Инициализация перед циклами
+        target_level_value = crop_matrix.max() * target_level
+
+        for level, segs in zip(contours.levels, contours.allsegs):
+            if level == target_level_value:
+                for seg in segs:
+                    path = Path(seg)
                     if path.contains_point(point):
                         contour_path = path
                         point_in_contour = True
@@ -361,7 +366,7 @@ class ArrayOperations:
             array (Union[list, np.ndarray]): сохраняемый массив
             name_of_file (str): имя файла ```.json```
         """
-        with open(f'{name_of_file.translate({ord(i): None for i in ':-'})}.json', 'w') as file:
+        with open(f"{name_of_file.translate({ord(i): None for i in ':-'})}.json", 'w') as file:
             json.dump(array, file)
 
     @staticmethod
@@ -410,13 +415,17 @@ class MplFunction:
 class Monitoring:
 
     @staticmethod
-    def start_log(name_file : str):
+    def start_log(name_file : str, multithr = False):
         """Инициализация ```.log``` файла
         Args:
             name_file (str): название файла
+            multithr (bool): указание является ли скрипт многопоточным, по умолчанию - нет
         """
-        logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', encoding = "UTF-8")
-        # encoding = "UTF-8"
+        if multithr == True:
+            logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(process)d] %(levelname)s: %(message)s', handlers=[logging.FileHandler(f"{name_file}.log", mode='a'), logging.StreamHandler()], encoding = "UTF-8")
+        else:
+            logging.basicConfig(filename = f'{name_file}.log',  filemode='a', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', encoding = "UTF-8")
+            # encoding = "UTF-8"
 
     @staticmethod
     def logprint(info_msg : str):
@@ -435,7 +444,7 @@ class Monitoring:
         Args:
             header (Header): заголовок ```.fits``` файла
         """
-        Monitoring.logprint(f'\nДата: {header['DATE-OBS']}\nВремя: {header['T-OBS']}\nИнструмент: {header['INSTRUME']}\nЧастота: {header['FREQUENC']}\nРазмер изображения: {header['NAXIS1']} px * {header['NAXIS2']} px\nУгловое разрешение: {header['CDELT1']} arcsec/px\nБольшая полуось ДН: {header['PSF_ELLA']}\nМалая полуось ДН: {header['PSF_ELLB']}\nУгол поворота ДН: {header['PSF_ELLT']}')
+        Monitoring.logprint(f"\nДата: {header['DATE-OBS']}\nВремя: {header['T-OBS']}\nИнструмент: {header['INSTRUME']}\nЧастота: {header['FREQUENC']}\nРазмер изображения: {header['NAXIS1']} px * {header['NAXIS2']} px\nУгловое разрешение: {header['CDELT1']} arcsec/px\nБольшая полуось ДН: {header['PSF_ELLA']}\nМалая полуось ДН: {header['PSF_ELLB']}\nУгол поворота ДН: {header['PSF_ELLT']}")
 
 class ConvertingArrays:
     """
