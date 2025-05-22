@@ -18,6 +18,14 @@ from scipy import constants
 from scipy.optimize import curve_fit
 
 
+class Variables:
+
+    freqs_lists = {"0306" : [2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800], "0612" : [6000, 6400, 6800, 7200, 7600, 8000, 8400, 8800, 9200, 9600, 10000, 10400, 10800, 11200, 11600, 12000], "1224" : [12200, 12960, 13720, 14480, 15240, 16000, 16760, 17520, 18280, 19040, 19800, 20560, 21320, 22080, 23000, 23400]}
+
+    freqs_list_0306 = [2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800]
+    freqs_list_0612 = [6000, 6400, 6800, 7200, 7600, 8000, 8400, 8800, 9200, 9600, 10000, 10400, 10800, 11200, 11600, 12000]
+    freqs_list_1224 = [12200, 12960, 13720, 14480, 15240, 16000, 16760, 17520, 18280, 19040, 19800, 20560, 21320, 22080, 23000, 23400]
+
 class Extract:
 
     def __init__(self) -> None:
@@ -632,6 +640,91 @@ class OsOperations:
         files = sorted(list_of_1st_two_files, key=lambda x: extract.extract_number(x, freqs))
         freqs = sorted(list(freqs))
         return files, freqs
+
+class FitsOperations:
+
+    @staticmethod
+    def transform_fits_name(anf_file_name: str, polariz: str = None) -> str:
+        """Перевод имени файла из системы имен кода Анфиногентова в систему имен кода Глобы
+
+        Args:
+            anf_file_name (str): имя файла в кодах Анфиногентова
+            polariz (str, optional): поляризация (указывается вручную в случае перевода IV в RL)
+
+        Returns:
+            str: имя файла в кодах Глобы
+        """
+
+        anf_cut_name = anf_file_name[:-5].split('_')
+
+        if polariz == None:
+            globa_file_name = f'srh_{anf_cut_name[4]}T{anf_cut_name[5]}_{anf_cut_name[2].split('.')[0]}{anf_cut_name[2].split('.')[1][0:2]}0_{anf_cut_name[3]}.fits'
+        else:
+            globa_file_name = f'srh_{anf_cut_name[4]}T{anf_cut_name[5]}_{anf_cut_name[2].split('.')[0]}{anf_cut_name[2].split('.')[1][0:2]}0_{polariz}.fits'
+
+        return globa_file_name
+
+    @staticmethod
+    def IV2RL(directory_in: str, anf_file_name_I: str, anf_file_name_V: str, directory_out: str = False, deleteIV: bool = True):
+        """Функция перевода файлов из IV (интенсивность и поляризация) в RL (правая и левая поляризация)
+
+        Args:
+            directory (str): путь до директории с файлами
+            anf_file_name_I (str): имя I-файла
+            anf_file_name_V (str): имя V-файла
+            directory_out (str): имя выходной директории
+            deleteIV (bool, optional): удалять ли исходные IV файлы (по умолчанию - да)
+        """
+
+        I_full_path = os.path.join(directory_in, anf_file_name_I)
+        V_full_path = os.path.join(directory_in, anf_file_name_V)
+        hdul1 = fits.open(I_full_path, ignore_missing_simple=True)
+        hdul2 = fits.open(V_full_path, ignore_missing_simple=True)
+        I = hdul1[0].data
+        V = hdul2[0].data
+        header1 = hdul1[0].header
+        header2 = hdul2[0].header
+        hdul1.close()
+        hdul2.close()
+
+        R = I + V
+        L = I - V
+        header1['POLARIZ'] = 'RCP'
+        header2['POLARIZ'] = 'LCP'
+
+        if not directory_out:
+            directory_out = directory_in
+
+        fits.writeto(f'{directory_in}/../{directory_out}/{FitsOperations.transform_fits_name(anf_file_name_I, "RCP")}', R, overwrite=True, header=header1)
+        fits.writeto(f'{directory_in}/../{directory_out}/{FitsOperations.transform_fits_name(anf_file_name_V, "LCP")}', L, overwrite=True, header=header2)
+
+        if deleteIV:
+            os.remove(I_full_path)
+            os.remove(V_full_path)
+
+    @staticmethod
+    def folder_name_anf2globa(name_folder:str) -> int:
+        """Функция перевода имени папки с .fits фалами из системы имен файлов Ангфиногентова в систему имен файлов Глобы
+
+        Args:
+            name_folder (str): имя папки в системе имен Анфиногентова
+
+        Returns:
+            int: номер частоты для создания имени папки в системе имен Глобы
+        """
+
+        match = re.search(r"SRH(\d+)_CH(\d+)", name_folder)
+        if match:
+            srh_number = match.group(1)
+            ch_number = match.group(2).replace("0", "")
+            if ch_number == '':
+                ch_number = 0
+        else:
+            print('Не удалось распознать имя директории')
+
+        globa_freq = Variables.freqs_lists[srh_number][int(ch_number)]
+
+        return globa_freq
 
 class Properties:
 
