@@ -131,8 +131,11 @@ dmypy.json
 #other
 logs.log
 /aligned
+/dreif
+/dreif_2
 /intensity_graphs
 datas_about_flare/*
+/media
 
 test.py
 config.py
