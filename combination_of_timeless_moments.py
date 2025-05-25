@@ -9,12 +9,12 @@ from config import directory
 
 extract = Extract()
 
-target_time = "20240514T020138"
+target_time = "20240514T021000"
 destination_folder = f"{directory}_times/{target_time}"
 
-OsOperations.create_place(destination_folder)
-
 def find_nearest_files(src_folder, target_time, dest_folder):
+
+    OsOperations.create_place(dest_folder)
     target_time = datetime.strptime(target_time, "%Y%m%dT%H%M%S")
 
     for root, dirs, files in os.walk(src_folder):
