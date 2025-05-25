@@ -10,8 +10,8 @@ from matplotlib import ticker
 from matplotlib.ticker import NullFormatter, ScalarFormatter
 from tqdm import tqdm
 
-from analise_utils import (ConvertingArrays, Extract, FindIntensity,
-                            Monitoring, MplFunction, OsOperations, ZirinTb)
+from analise_utils import (ConvertingArrays, Extract, FindIntensity, Monitoring, MplFunction, OsOperations, ZirinTb)
+from combination_of_timeless_moments import find_nearest_files
 
 extractor = Extract()
 zirin = ZirinTb()
@@ -22,21 +22,26 @@ logging.info(f'Start of the program to search intensity spectrum of a sun')
 ############################################
 ##### Values #####
 directories = ["E:/datasets/20.01.22/times/20220120T055530_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055730_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055845_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055945_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T060045_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T060200_calibrated_brightness_COM_aligned"]
-directories = ["E:/datasets/16.07.23/times/20230716T082420_calibrated_brightness_aligned"]
-polynomial_degree = 3
+directories = ['F:/20240514_times/20240514T020548']
+polynomial_degree = 4
+# coordinates = (324, 628)
 coordinates = (890, 563)
-coordinates = (324, 628)
+coordinates = (893, 565)
+coordinates = (660, 298)
 ##### Params #####
-running_mean = True
-gs_approx = False #чет не работает
+running_mean = False
+polinom_approx = False
+gs_approx = False  #чет не работает
+gm_approx = True
 psf_calibration = False
 background_Zirin_subtraction = False
 intensity_plot = False
-save_graphs = False
+save_graphs = True
 #############################################
 
 if save_graphs:
-    OsOperations.create_place(f'intensity_graph_{extractor.extract_datetime(directories[0])[0:7]}')
+    if not os.path.isdir('intensity_graphs'):
+        OsOperations.create_place('intensity_graphs')
 
 if psf_calibration:
     psf_npz_file = np.load('psf_square.npz')
@@ -46,13 +51,23 @@ if psf_calibration:
 psf_square = np.array([1.75, 1.7, 1.65, 1.6, 1.55, 1.5, 1.45, 1.4, 1.35, 1.3, 1.2, 1.15, 1.1, 1.05, 1])  # 20.01.22 (9800 = 1.25, 10200 = 1.2)
 
 for directory in tqdm(directories):
+    # print(directory)
+    # print(directory.split('/')[-1])
+
+    # if not os.path.isdir(directory):
+    #     try:
+    #         find_nearest_files(directory, directory.split('/')[-1], f"{directory}_times/{directory.split('/')[-1]}")
+    #         print('типо отработал')
+    #     except Exception as err:
+    #         print('Папка не существует, создать не удалось')
+    #         sys.exit()
+
     logging.info(f'Path to files: {directory}')
     freqs = set()
     files = sorted(os.listdir(directory), key=lambda x: extractor.extract_number(x, freqs))
     logging.info(f'Find {len(files)} files')
     logging.info(f'List files: \n {files}')
     freqs = np.array(sorted(list(freqs)))
-
     if psf_calibration == True:
         if (freqs_npz != freqs).any():
             logging.warning(f"Freqs in npz is not freqs in directory")
@@ -74,7 +89,7 @@ for directory in tqdm(directories):
         img = data[0].data
         data.close()
 
-        intensivity = FindIntensity.find_intensity_in_nine_point(img, coordinates)
+        intensivity = FindIntensity.find_intensity_in_four_point(img, coordinates)
         logging.info(f'{files[image_index]} - {intensivity}')
 
         if r_or_l == 'RCP' or r_or_l == 'R':
@@ -102,8 +117,14 @@ for directory in tqdm(directories):
     if gs_approx:
         flux_density_left_approx = ConvertingArrays.gs_approximation(flux_density_left, freqs)[0]
         flux_density_right_approx = ConvertingArrays.gs_approximation(flux_density_right, freqs)[0]
-        logging.info(f'Flux in sfu for LCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_left)}]')
-        logging.info(f'Flux in sfu for RCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_right)}]')
+        logging.info(f'Flux in sfu for LCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_left_approx)}]')
+        logging.info(f'Flux in sfu for RCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_right_approx)}]')
+
+    if gm_approx:
+        flux_density_left_gm_approx = ConvertingArrays.gamma_approximation(flux_density_left, freqs)
+        flux_density_right_gm_approx = ConvertingArrays.gamma_approximation(flux_density_right, freqs)
+        logging.info(f'Flux in sfu for LCP with gamma approximation: [{ConvertingArrays.arr2str4print(flux_density_left_gm_approx)}]')
+        logging.info(f'Flux in sfu for RCP with gamma approximation: [{ConvertingArrays.arr2str4print(flux_density_right_gm_approx)}]')
 
     if psf_calibration:
         correction_psf_left = flux_density_left * psf_square
@@ -138,26 +159,34 @@ for directory in tqdm(directories):
     logging.info(f'Finish flux in s.f.u for RCP - polifit: [{ConvertingArrays.arr2str4print(ya_right)}]')
 
     ######## График поляризаций #######
-    fig_LR, LR_axs = plt.subplots(1, 2, num="L and R polarization", figsize=(18, 9), sharex=True, sharey=True)
+    fig_LR, LR_axs = plt.subplots(1, 2, num="L and R polarization", figsize=(27, 15), sharex=True, sharey=True)
     # fig.suptitle(f'{directory[9:24]}')
 
     LR_axs[0].plot(plot_freqs, flux_density_left, 'o', label = f"Наблюдаемый спектр", color = 'darkblue', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
-    LR_axs[0].plot(plot_freqs, ya_left, linestyle = '--', zorder = 1)
+    if polinom_approx:
+        LR_axs[0].plot(plot_freqs, ya_left, linestyle = '--', zorder = 1)
     if psf_calibration == True:
         LR_axs[0].plot(plot_freqs, correction_psf_ya_left, linestyle = '--', zorder = 1)
         LR_axs[0].plot(plot_freqs, correction_psf_left, 'o', label = f"Наблюдаемый спектр\nс поправкой на ширину\nдиаграммы направленности", linewidth = 8, color = 'firebrick', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
     if gs_approx == True:
         LR_axs[0].plot(plot_freqs, flux_density_left_approx, linestyle = '--', zorder = 1)
+    if gm_approx == True:
+        LR_axs[0].plot(plot_freqs, flux_density_left_gm_approx, linestyle = '--', zorder = 1)
+
     LR_axs[0].set_title('LCP', fontweight='bold')
     LR_axs[0].set_ylabel('Flux density, $sfu$')
 
     LR_axs[1].plot(plot_freqs, flux_density_right, 'o', label = f"Наблюдаемый спектр", linewidth = 8, color = 'darkblue', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
-    LR_axs[1].plot(plot_freqs, ya_right, linestyle = '--', zorder = 1)
+    if polinom_approx:
+        LR_axs[1].plot(plot_freqs, ya_right, linestyle = '--', zorder = 1)
     if psf_calibration == True:
         LR_axs[1].plot(plot_freqs, correction_psf_ya_right, linestyle = '--', zorder = 1)
         LR_axs[1].plot(plot_freqs, correction_psf_right, 'o', label = f"Наблюдаемый спектр\nс поправкой на ширину\nдиаграммы направленности", color = 'firebrick', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
     if gs_approx == True:
         LR_axs[1].plot(plot_freqs, flux_density_right_approx, linestyle = '--', zorder = 1)
+    if gm_approx == True:
+        LR_axs[1].plot(plot_freqs, flux_density_right_gm_approx, linestyle = '--', zorder = 1)
+
     LR_axs[1].set_title('RCP', fontweight='bold')
     # axs[1].set_ylabel('Flux density, $sfu$')
 
@@ -171,12 +200,12 @@ for directory in tqdm(directories):
         ax.xaxis.set_minor_locator(ticker.NullLocator())
         ax.xaxis.set_ticks(plot_freqs)
         ax.set_xticklabels(plot_freqs, rotation=60, ha='right')
-        ax.set_xlim(np.min(plot_freqs) - np.log10(np.min(plot_freqs) * 0.3), np.max(plot_freqs) + np.log10(np.max(plot_freqs) * 0.3))
+        ax.set_xlim(np.min(plot_freqs) - np.log10(np.min(plot_freqs) * 0.5), np.max(plot_freqs) + np.log10(np.max(plot_freqs) * 0.5))
         ax.set_ylim(np.min(flux_for_graph_RL) - np.min(flux_for_graph_RL) * 0.1, np.max(flux_for_graph_RL) + np.max(flux_for_graph_RL) * 0.1)
         ax.legend()
     plt.tight_layout()
     if save_graphs:
-        plt.savefig(f'intensity_graph_{extractor.extract_datetime(directories[0])[0:7]}/LCP_RCP_{extractor.extract_datetime(directory)}.png', dpi = 300)
+        plt.savefig(f'intensity_graphs/LCP_RCP_{extractor.extract_datetime(directory)}.png', dpi = 300)
     else:
         plt.show()
     plt.close()
