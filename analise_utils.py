@@ -523,11 +523,48 @@ class ConvertingArrays:
 
         def spectrum_function(array_freqs, a1, a2, a3, a4):
             return a1 * array_freqs**a2 * (1 - np.exp(-a3 * array_freqs**-a4))
-        popt, pcov = curve_fit(spectrum_function, array_freqs, array_sfu)
+        popt, pcov = curve_fit(spectrum_function, array_freqs, array_sfu, p0=[0.00013, 0.9, 1, -1],  bounds=([0, 0, 0, -10], [np.inf, 5, np.inf, 0]), maxfev=50000)
         a1, a2, a3, a4 = popt
         print(f'Coeff: a1, a2, a3, a4 = {a1, a2, a3, a4}')
         approximation_arr = spectrum_function(array_freqs, *popt)
         return ((approximation_arr, np.array([a1, a2, a3, a4])))
+
+    @staticmethod
+    def gamma_approximation(intensity: np.ndarray, freqs: np.ndarray) -> np.ndarray:
+
+        # Преобразование к лог-лог масштабу
+        log_freqs = np.log10(freqs)
+        log_intensity = np.log10(intensity)
+
+        # Модель: логарифмическая версия гамма-функции
+        def log_gamma_model(log_x, log_A, n, x0):
+            x = 10**log_x
+            return log_A + n * np.log10(x / x0) - (x / x0) * np.log10(np.e)
+
+        def log_gamma_sharp(log_x, log_A, n, x0, beta):
+            x = 10**log_x
+            return log_A + n * np.log10(x / x0) - (x / x0)**beta * np.log10(np.e)
+
+        def log_asymmetric_peak(log_x, log_A, x0, w, gamma):
+            x = 10**log_x
+            log_term = np.log10(x / x0) / w
+            return log_A - np.abs(log_term)**gamma * np.log10(np.e)
+
+        def log_double_sided_peak(log_x, log_A, x0, w_L, w_R, gamma):
+            x = 10**log_x
+            log_term = np.log(x / x0)
+            w = np.where(x < x0, w_L, w_R)
+            abs_term = np.abs(log_term / w)
+            return log_A - abs_term**gamma * np.log10(np.e)
+
+        p0 = [0, 7000, 0.15, 0.25, 1.5]
+        params, _ = curve_fit(log_double_sided_peak, log_freqs, log_intensity, p0=p0)
+        # log_A_fit, n_fit, x0_fit = params
+        log_A_fit, n_fit, x0_fit, beta, hueta = params
+        log_fit = log_double_sided_peak(np.log10(freqs), *params)
+        y_fit = 10**log_fit
+
+        return y_fit
 
     @staticmethod
     def background_subtraction(arr_left_flux: np.ndarray, arr_right_flux: np.ndarray, arr_freqs: np.ndarray):
