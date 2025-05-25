@@ -131,6 +131,7 @@ dmypy.json
 #other
 logs.log
 /aligned
+/intensity_graphs
 datas_about_flare/*
 
 test.py
