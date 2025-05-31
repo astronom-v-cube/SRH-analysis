@@ -523,11 +523,43 @@ class ConvertingArrays:
 
         def spectrum_function(array_freqs, a1, a2, a3, a4):
             return a1 * array_freqs**a2 * (1 - np.exp(-a3 * array_freqs**-a4))
-        popt, pcov = curve_fit(spectrum_function, array_freqs, array_sfu)
+        popt, pcov = curve_fit(spectrum_function, array_freqs, array_sfu, p0=[0.00013, 0.9, 1, -1],  bounds=([0, 0, 0, -10], [np.inf, 5, np.inf, 0]), maxfev=50000)
         a1, a2, a3, a4 = popt
         print(f'Coeff: a1, a2, a3, a4 = {a1, a2, a3, a4}')
         approximation_arr = spectrum_function(array_freqs, *popt)
         return ((approximation_arr, np.array([a1, a2, a3, a4])))
+
+    @staticmethod
+    def gamma_approximation(intensity: np.ndarray, freqs: np.ndarray) -> np.ndarray:
+
+        # Преобразование к лог-лог масштабу
+        log_freqs = np.log10(freqs)
+        log_intensity = np.log10(intensity)
+
+        def log_broken_power_peak(log_x, log_A, log_nu_peak, alpha, beta, smooth):
+            """
+            Гладкий сломанный степенной закон в логарифмах.
+            log_x: log10(ν)
+            log_A: log10(amplitude)
+            log_nu_peak: log10(частота пика)
+            alpha: наклон фазы роста
+            beta: наклон фазы спада
+            smooth: степень закругления (чем больше, тем резче)
+            """
+            delta = log_x - log_nu_peak
+            return log_A - np.log10(10**(-alpha * delta) + 10**(-beta * delta)) / smooth
+
+        p0 = [np.max(log_intensity), np.log10(freqs[np.argmax(intensity)]), 2.5, -3.5, 1.0]
+        bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf, np.inf, 10])
+        params, _ = curve_fit(log_broken_power_peak, log_freqs, log_intensity, p0=p0, bounds=bounds)
+        print(params)
+        # log_A_fit, n_fit, x0_fit = params
+        # log_A_fit, n_fit, x0_fit, beta, hueta = params
+        log_fit = log_broken_power_peak(np.log10(freqs), *params)
+        y_fit = 10**log_fit
+
+        return y_fit
+
 
     @staticmethod
     def background_subtraction(arr_left_flux: np.ndarray, arr_right_flux: np.ndarray, arr_freqs: np.ndarray):
@@ -641,7 +673,7 @@ class OsOperations:
         freqs = sorted(list(freqs))
         return files, freqs
 
-class FitsOperations:
+class FileOperations:
 
     @staticmethod
     def transform_fits_name(anf_file_name: str, polariz: str = None) -> str:
@@ -695,8 +727,8 @@ class FitsOperations:
         if not directory_out:
             directory_out = directory_in
 
-        fits.writeto(f'{directory_in}/../{directory_out}/{FitsOperations.transform_fits_name(anf_file_name_I, "RCP")}', R, overwrite=True, header=header1)
-        fits.writeto(f'{directory_in}/../{directory_out}/{FitsOperations.transform_fits_name(anf_file_name_V, "LCP")}', L, overwrite=True, header=header2)
+        fits.writeto(f'{directory_in}/../{directory_out}/{FileOperations.transform_fits_name(anf_file_name_I, "RCP")}', R, overwrite=True, header=header1)
+        fits.writeto(f'{directory_in}/../{directory_out}/{FileOperations.transform_fits_name(anf_file_name_V, "LCP")}', L, overwrite=True, header=header2)
 
         if deleteIV:
             os.remove(I_full_path)
