@@ -9,6 +9,9 @@ from astropy.io import fits
 from matplotlib import ticker
 from matplotlib.ticker import NullFormatter, ScalarFormatter
 from tqdm import tqdm
+from scipy.io import readsav
+from datetime import datetime, timedelta
+
 
 from analise_utils import (ConvertingArrays, Extract, FindIntensity, Monitoring, MplFunction, OsOperations, ZirinTb)
 from combination_of_timeless_moments import find_nearest_files
@@ -16,19 +19,27 @@ from combination_of_timeless_moments import find_nearest_files
 extractor = Extract()
 zirin = ZirinTb()
 MplFunction.set_mpl_rc()
-Monitoring.start_log('230122_logs')
+Monitoring.start_log('14052024')
 logging.info(f'Start of the program to search intensity spectrum of a sun')
 
 ############################################
 ##### Values #####
-directories = ["E:/datasets/20.01.22/times/20220120T055530_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055730_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055845_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T055945_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T060045_calibrated_brightness_COM_aligned", "E:/datasets/20.01.22/times/20220120T060200_calibrated_brightness_COM_aligned"]
-directories = ['F:/20240514_times/20240514T020548']
+sbc_raw = 'F:/cbs_data_2hours.sav'
+times_list = [
+    '20240514T020540',
+    ]
+
+directories = [None] * len(times_list)
+for index, time in enumerate(times_list):
+    directories[index] = f'F:/20240514_times/{time}'
+
 polynomial_degree = 4
 # coordinates = (324, 628)
 coordinates = (890, 563)
 coordinates = (893, 565)
 coordinates = (660, 298)
 ##### Params #####
+adding_sbc_data = True
 running_mean = False
 polinom_approx = False
 gs_approx = False  #чет не работает
@@ -37,6 +48,7 @@ psf_calibration = False
 background_Zirin_subtraction = False
 intensity_plot = False
 save_graphs = True
+use_sbc_data = True
 #############################################
 
 if save_graphs:
@@ -50,17 +62,16 @@ if psf_calibration:
 # psf_square = np.array([11.1460177 ,  9.72418879,  8.5339233 ,  7.57227139,  6.74631268, 6.04867257,  5.46902655,  4.96902655,  4.49115044,  4.12831858, 3.5280236 ,  3.23156342,  3.11651917,  2.99852507,  2.78466077, 2.76548673,  2.59734513,  2.47640118,  2.22713864,  2.01917404, 1.83185841,  1.70943953,  1.55899705,  1.42625369,  1.32300885, 1.21976401,  1.13126844,  1.0560472, 1]) # 16.07.23
 psf_square = np.array([1.75, 1.7, 1.65, 1.6, 1.55, 1.5, 1.45, 1.4, 1.35, 1.3, 1.2, 1.15, 1.1, 1.05, 1])  # 20.01.22 (9800 = 1.25, 10200 = 1.2)
 
-for directory in tqdm(directories):
-    # print(directory)
-    # print(directory.split('/')[-1])
+for directory in tqdm(directories, desc='Times analise', leave=True):
+    print(directory.split('/')[-1])
 
-    # if not os.path.isdir(directory):
-    #     try:
-    #         find_nearest_files(directory, directory.split('/')[-1], f"{directory}_times/{directory.split('/')[-1]}")
-    #         print('типо отработал')
-    #     except Exception as err:
-    #         print('Папка не существует, создать не удалось')
-    #         sys.exit()
+    if os.path.isdir(directory) == False:
+        try:
+            find_nearest_files(directory.split('_')[0], directory.split('/')[-1], directory)
+        except Exception as err:
+            print(err)
+            print('Папка не существует, создать не удалось')
+            sys.exit()
 
     logging.info(f'Path to files: {directory}')
     freqs = set()
@@ -68,6 +79,7 @@ for directory in tqdm(directories):
     logging.info(f'Find {len(files)} files')
     logging.info(f'List files: \n {files}')
     freqs = np.array(sorted(list(freqs)))
+    print(freqs)
     if psf_calibration == True:
         if (freqs_npz != freqs).any():
             logging.warning(f"Freqs in npz is not freqs in directory")
@@ -108,6 +120,39 @@ for directory in tqdm(directories):
     logging.info(f'The basic value flux in sfu for LCP: [{ConvertingArrays.arr2str4print(flux_density_left)}]')
     logging.info(f'The basic value flux in sfu for RCP: [{ConvertingArrays.arr2str4print(flux_density_right)}]')
 
+    if use_sbc_data:
+        sbc_data = readsav(sbc_raw)['datas'].T
+        datetime_list = []
+        base_date = datetime(int(directory.split('/')[-1][0:4]), int(directory.split('/')[-1][4:6]), int(directory.split('/')[-1][6:8]))
+        sbc_freqs = np.linspace(35250, 39750, 10)
+
+        for row_time in readsav(sbc_raw)['times']:
+            hours = int(row_time[0].decode('utf-8'))
+            minutes = int(row_time[1].decode('utf-8'))
+            seconds = float(row_time[2].decode('utf-8'))
+            time = base_date + timedelta(hours=hours, minutes=minutes, seconds=seconds)
+            datetime_list.append(time)
+
+        # Найти индекс ближайшего времени
+        target_time = datetime.strptime(directory.split('/')[-1], "%Y%m%dT%H%M%S")
+        time_diffs = [abs((dt - target_time).total_seconds()) for dt in datetime_list]
+        nearest_index = int(np.argmin(time_diffs))
+        nearest_time = datetime_list[nearest_index]
+
+        # Получить частотные данные для ближайшего момента
+        sbc_values = sbc_data[:, nearest_index]  # shape (10,), соответствующее sbc_freqs
+        correct_sbc = np.array([2743, 2865, 2952, 3059, 3088, 3224, 3231, 3365, 3544, 3593])
+        sbc_values = sbc_values - correct_sbc
+        flux_density_left = np.concatenate((flux_density_left, sbc_values/2), axis=0)
+        flux_density_right = np.concatenate((flux_density_right, sbc_values/2), axis=0)
+        print(freqs)
+        freqs = np.concatenate((freqs, sbc_freqs), axis=0)
+        print(freqs)
+
+        print(f"Ближайшее время: {nearest_time}")
+        for freq, val in zip(sbc_freqs, sbc_values):
+            print(f"{freq:.1f} MHz: {val}")
+
     if running_mean:
         flux_density_left = ConvertingArrays.variable_running_mean(flux_density_left)
         flux_density_right = ConvertingArrays.variable_running_mean(flux_density_right)
@@ -121,8 +166,18 @@ for directory in tqdm(directories):
         logging.info(f'Flux in sfu for RCP with GS approximation: [{ConvertingArrays.arr2str4print(flux_density_right_approx)}]')
 
     if gm_approx:
-        flux_density_left_gm_approx = ConvertingArrays.gamma_approximation(flux_density_left, freqs)
-        flux_density_right_gm_approx = ConvertingArrays.gamma_approximation(flux_density_right, freqs)
+        try:
+            flux_density_left_gm_approx = ConvertingArrays.gamma_approximation(flux_density_left, freqs)
+            flux_density_right_gm_approx = ConvertingArrays.gamma_approximation(flux_density_right, freqs)
+        except RuntimeError:
+            print('Not sucsess approximation, use running mean...')
+            temp_left = ConvertingArrays.variable_running_mean(flux_density_left)
+            temp_right = ConvertingArrays.variable_running_mean(flux_density_right)
+            flux_density_left_gm_approx = ConvertingArrays.gamma_approximation(temp_left, freqs)
+            flux_density_right_gm_approx = ConvertingArrays.gamma_approximation(temp_right, freqs)
+        except Exception as err:
+            print(f'Error approximation: {err}')
+            sys.exit()
         logging.info(f'Flux in sfu for LCP with gamma approximation: [{ConvertingArrays.arr2str4print(flux_density_left_gm_approx)}]')
         logging.info(f'Flux in sfu for RCP with gamma approximation: [{ConvertingArrays.arr2str4print(flux_density_right_gm_approx)}]')
 
@@ -143,24 +198,25 @@ for directory in tqdm(directories):
     # необходимо для настройки области отображения, лимитов по осям
     flux_for_graph_RL = np.concatenate((flux_density_left, flux_density_right, correction_psf_left, correction_psf_right), axis=0)
     flux_for_graph_I = np.concatenate((flux_density_left + flux_density_right, correction_psf_left + correction_psf_right), axis=0)
-    plot_freqs = freqs/1000
 
-    correction_quate_sun_left = [1.03838439, 0.95999654, 1.09428362, 0.97976959, 0.9899581, 0.87707643, 0.9681845, 0.98712561, 1.03482719, 1.06164441, 1.06819119, 1.02623596, 0.97603417, 1.00623033, 0.95329644]
-    correction_quate_sun_right = [1.03798513, 1.01688483, 1.04706266, 0.94311813, 0.94967881, 0.9540217, 0.94383052, 1.02094715, 0.99510278, 1.05711966, 1.10484654, 0.96657375, 1.07459668, 0.96531071, 0.94302758]
+    # correction_quate_sun_left = [1.03838439, 0.95999654, 1.09428362, 0.97976959, 0.9899581, 0.87707643, 0.9681845, 0.98712561, 1.03482719, 1.06164441, 1.06819119, 1.02623596, 0.97603417, 1.00623033, 0.95329644]
+    # correction_quate_sun_right = [1.03798513, 1.01688483, 1.04706266, 0.94311813, 0.94967881, 0.9540217, 0.94383052, 1.02094715, 0.99510278, 1.05711966, 1.10484654, 0.96657375, 1.07459668, 0.96531071, 0.94302758]
 
-    # polynom_left = np.polyfit(freqs, np.log(flux_density_left * correction_quate_sun_left), polynomial_degree)
-    polynom_left = np.polyfit(freqs, np.log(flux_density_left), polynomial_degree)
-    ya_left = np.exp(np.polyval(polynom_left, freqs))
-    # polynom_right = np.polyfit(freqs, np.log(flux_density_right * correction_quate_sun_right), polynomial_degree)
-    polynom_right = np.polyfit(freqs, np.log(flux_density_right), polynomial_degree)
-    ya_right = np.exp(np.polyval(polynom_right, freqs))
+    if polinom_approx:
+        # polynom_left = np.polyfit(freqs, np.log(flux_density_left * correction_quate_sun_left), polynomial_degree)
+        polynom_left = np.polyfit(freqs, np.log(flux_density_left), polynomial_degree)
+        ya_left = np.exp(np.polyval(polynom_left, freqs))
+        # polynom_right = np.polyfit(freqs, np.log(flux_density_right * correction_quate_sun_right), polynomial_degree)
+        polynom_right = np.polyfit(freqs, np.log(flux_density_right), polynomial_degree)
+        ya_right = np.exp(np.polyval(polynom_right, freqs))
 
-    logging.info(f'Finish flux in s.f.u for LCP - polifit: [{ConvertingArrays.arr2str4print(ya_left)}]')
-    logging.info(f'Finish flux in s.f.u for RCP - polifit: [{ConvertingArrays.arr2str4print(ya_right)}]')
+        logging.info(f'Finish flux in s.f.u for LCP - polifit: [{ConvertingArrays.arr2str4print(ya_left)}]')
+        logging.info(f'Finish flux in s.f.u for RCP - polifit: [{ConvertingArrays.arr2str4print(ya_right)}]')
 
     ######## График поляризаций #######
     fig_LR, LR_axs = plt.subplots(1, 2, num="L and R polarization", figsize=(27, 15), sharex=True, sharey=True)
     # fig.suptitle(f'{directory[9:24]}')
+    plot_freqs = freqs/1000
 
     LR_axs[0].plot(plot_freqs, flux_density_left, 'o', label = f"Наблюдаемый спектр", color = 'darkblue', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
     if polinom_approx:
@@ -199,7 +255,7 @@ for directory in tqdm(directories):
         ax.xaxis.set_minor_formatter(NullFormatter())
         ax.xaxis.set_minor_locator(ticker.NullLocator())
         ax.xaxis.set_ticks(plot_freqs)
-        ax.set_xticklabels(plot_freqs, rotation=60, ha='right')
+        ax.set_xticklabels(plot_freqs, rotation=75, ha='right', fontsize=12, zorder=0)
         ax.set_xlim(np.min(plot_freqs) - np.log10(np.min(plot_freqs) * 0.5), np.max(plot_freqs) + np.log10(np.max(plot_freqs) * 0.5))
         ax.set_ylim(np.min(flux_for_graph_RL) - np.min(flux_for_graph_RL) * 0.1, np.max(flux_for_graph_RL) + np.max(flux_for_graph_RL) * 0.1)
         ax.legend()
