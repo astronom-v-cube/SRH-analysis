@@ -1,5 +1,5 @@
 from astropy.io import fits
-from analise_utils import Monitoring, OsOperations, FitsOperations, Variables
+from analise_utils import Monitoring, OsOperations, FileOperations, Variables
 import logging
 import os, sys
 from tqdm import tqdm
@@ -27,7 +27,7 @@ for directory in tqdm(directories, desc='Freqs convert', leave=True):
         else:
             print(f'Что-то не то с {filename}')
             sys.exit()
-    OsOperations.create_place(os.path.join(root_directory, str(FitsOperations.folder_name_anf2globa(directory))))
+    OsOperations.create_place(os.path.join(root_directory, str(FileOperations.folder_name_anf2globa(directory))))
 
     for index in tqdm(range(len(I_fits_files)), desc='Files convert', leave=False):
-        FitsOperations.IV2RL(os.path.join(root_directory, directory), I_fits_files[index], V_fits_files[index], str(FitsOperations.folder_name_anf2globa(directory)), deleteIV=False)
+        FileOperations.IV2RL(os.path.join(root_directory, directory), I_fits_files[index], V_fits_files[index], str(FileOperations.folder_name_anf2globa(directory)), deleteIV=False)
