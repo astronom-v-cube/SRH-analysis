@@ -556,7 +556,9 @@ class ConvertingArrays:
         # log_A_fit, n_fit, x0_fit = params
         # log_A_fit, n_fit, x0_fit, beta, hueta = params
         log_fit = log_broken_power_peak(np.log10(freqs), *params)
+        plot_log_fit = log_broken_power_peak(np.log10(np.linspace(freqs[0], freqs[-1], 2048)), *params)
         y_fit = 10**log_fit
+
 
         return y_fit
 
