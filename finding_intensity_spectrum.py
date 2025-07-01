@@ -101,7 +101,7 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
         img = data[0].data
         data.close()
 
-        intensivity = FindIntensity.find_intensity_in_four_point(img, coordinates)
+        intensivity = FindIntensity.find_intensity_in_nine_point(img, coordinates)
         logging.info(f'{files[image_index]} - {intensivity}')
 
         if r_or_l == 'RCP' or r_or_l == 'R':
@@ -142,7 +142,7 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
         # Получить частотные данные для ближайшего момента
         sbc_values = sbc_data[:, nearest_index]  # shape (10,), соответствующее sbc_freqs
         correct_sbc = np.array([2743, 2865, 2952, 3059, 3088, 3224, 3231, 3365, 3544, 3593])
-        sbc_values = sbc_values - correct_sbc
+        sbc_values = sbc_values - correct_sbc - 4491
         flux_density_left = np.concatenate((flux_density_left, sbc_values/2), axis=0)
         flux_density_right = np.concatenate((flux_density_right, sbc_values/2), axis=0)
         print(freqs)
