@@ -539,7 +539,7 @@ class ConvertingArrays:
         def log_broken_power_peak(log_x, log_A, log_nu_peak, alpha, beta, smooth):
             """
             Гладкий сломанный степенной закон в логарифмах.
-            log_x: log10(ν)
+            log_x: log10(nu)
             log_A: log10(amplitude)
             log_nu_peak: log10(частота пика)
             alpha: наклон фазы роста
@@ -552,15 +552,16 @@ class ConvertingArrays:
         p0 = [np.max(log_intensity), np.log10(freqs[np.argmax(intensity)]), 2.5, -3.5, 1.0]
         bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf, np.inf, 10])
         params, _ = curve_fit(log_broken_power_peak, log_freqs, log_intensity, p0=p0, bounds=bounds)
-        print(params)
         # log_A_fit, n_fit, x0_fit = params
         # log_A_fit, n_fit, x0_fit, beta, hueta = params
+        approx_plot_freqs = np.logspace(np.log10(freqs[0]), np.log10(freqs[-1]), 2048)
+        plot_log_fit = log_broken_power_peak(np.log10(approx_plot_freqs), *params)
         log_fit = log_broken_power_peak(np.log10(freqs), *params)
         plot_log_fit = log_broken_power_peak(np.log10(np.linspace(freqs[0], freqs[-1], 2048)), *params)
         y_fit = 10**log_fit
+        plot_y_fit = 10**plot_log_fit
 
-
-        return y_fit
+        return y_fit, approx_plot_freqs, plot_y_fit
 
 
     @staticmethod

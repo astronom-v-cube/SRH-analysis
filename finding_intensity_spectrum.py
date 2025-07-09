@@ -26,7 +26,22 @@ logging.info(f'Start of the program to search intensity spectrum of a sun')
 ##### Values #####
 sbc_raw = 'F:/cbs_data_2hours.sav'
 times_list = [
-    '20240514T020540',
+    '20240514T020434',
+    '20240514T020446',
+    '20240514T020456',
+    '20240514T020501',
+    '20240514T020520',
+    '20240514T020530',
+    '20240514T020537',
+    '20240514T020544',
+    '20240514T020548',
+    '20240514T020555',
+    '20240514T020606',
+    '20240514T020613',
+    '20240514T020623',
+    '20240514T020641',
+    '20240514T020650',
+    '20240514T020657',
     ]
 
 directories = [None] * len(times_list)
@@ -35,9 +50,9 @@ for index, time in enumerate(times_list):
 
 polynomial_degree = 4
 # coordinates = (324, 628)
-coordinates = (890, 563)
-coordinates = (893, 565)
-coordinates = (660, 298)
+# coordinates = (890, 563)
+# coordinates = (893, 565)
+coordinates = (657, 297)
 ##### Params #####
 adding_sbc_data = True
 running_mean = False
@@ -49,6 +64,7 @@ background_Zirin_subtraction = False
 intensity_plot = False
 save_graphs = True
 use_sbc_data = True
+number_of_used_pixel = 4
 #############################################
 
 if save_graphs:
@@ -62,7 +78,7 @@ if psf_calibration:
 # psf_square = np.array([11.1460177 ,  9.72418879,  8.5339233 ,  7.57227139,  6.74631268, 6.04867257,  5.46902655,  4.96902655,  4.49115044,  4.12831858, 3.5280236 ,  3.23156342,  3.11651917,  2.99852507,  2.78466077, 2.76548673,  2.59734513,  2.47640118,  2.22713864,  2.01917404, 1.83185841,  1.70943953,  1.55899705,  1.42625369,  1.32300885, 1.21976401,  1.13126844,  1.0560472, 1]) # 16.07.23
 psf_square = np.array([1.75, 1.7, 1.65, 1.6, 1.55, 1.5, 1.45, 1.4, 1.35, 1.3, 1.2, 1.15, 1.1, 1.05, 1])  # 20.01.22 (9800 = 1.25, 10200 = 1.2)
 
-for directory in tqdm(directories, desc='Times analise', leave=True):
+for directory in tqdm(directories, desc='Times analise', position=0, leave=True):
     print(directory.split('/')[-1])
 
     if os.path.isdir(directory) == False:
@@ -79,7 +95,6 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
     logging.info(f'Find {len(files)} files')
     logging.info(f'List files: \n {files}')
     freqs = np.array(sorted(list(freqs)))
-    print(freqs)
     if psf_calibration == True:
         if (freqs_npz != freqs).any():
             logging.warning(f"Freqs in npz is not freqs in directory")
@@ -101,7 +116,13 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
         img = data[0].data
         data.close()
 
-        intensivity = FindIntensity.find_intensity_in_nine_point(img, coordinates)
+        if number_of_used_pixel == 1:
+            intensivity = FindIntensity.find_intensity_in_point(img, coordinates)
+        elif number_of_used_pixel == 4:
+            intensivity = FindIntensity.find_intensity_in_four_point(img, coordinates)
+        elif number_of_used_pixel == 9:
+            intensivity = FindIntensity.find_intensity_in_nine_point(img, coordinates)
+
         logging.info(f'{files[image_index]} - {intensivity}')
 
         if r_or_l == 'RCP' or r_or_l == 'R':
@@ -142,16 +163,14 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
         # Получить частотные данные для ближайшего момента
         sbc_values = sbc_data[:, nearest_index]  # shape (10,), соответствующее sbc_freqs
         correct_sbc = np.array([2743, 2865, 2952, 3059, 3088, 3224, 3231, 3365, 3544, 3593])
-        sbc_values = sbc_values - correct_sbc - 4491
+        sbc_values = (sbc_values - correct_sbc) * 0.065
         flux_density_left = np.concatenate((flux_density_left, sbc_values/2), axis=0)
         flux_density_right = np.concatenate((flux_density_right, sbc_values/2), axis=0)
-        print(freqs)
         freqs = np.concatenate((freqs, sbc_freqs), axis=0)
-        print(freqs)
 
         print(f"Ближайшее время: {nearest_time}")
-        for freq, val in zip(sbc_freqs, sbc_values):
-            print(f"{freq:.1f} MHz: {val}")
+        # for freq, val in zip(sbc_freqs, sbc_values):
+        #     print(f"{freq:.1f} MHz: {val}")
 
     if running_mean:
         flux_density_left = ConvertingArrays.variable_running_mean(flux_density_left)
@@ -167,14 +186,14 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
 
     if gm_approx:
         try:
-            flux_density_left_gm_approx = ConvertingArrays.gamma_approximation(flux_density_left, freqs)
-            flux_density_right_gm_approx = ConvertingArrays.gamma_approximation(flux_density_right, freqs)
+            flux_density_left_gm_approx, gm_left_plot_freqs, gm_left_plot_arr = ConvertingArrays.gamma_approximation(flux_density_left, freqs)
+            flux_density_right_gm_approx, gm_right_plot_freqs, gm_right_plot_arr = ConvertingArrays.gamma_approximation(flux_density_right, freqs)
         except RuntimeError:
             print('Not sucsess approximation, use running mean...')
             temp_left = ConvertingArrays.variable_running_mean(flux_density_left)
             temp_right = ConvertingArrays.variable_running_mean(flux_density_right)
-            flux_density_left_gm_approx = ConvertingArrays.gamma_approximation(temp_left, freqs)
-            flux_density_right_gm_approx = ConvertingArrays.gamma_approximation(temp_right, freqs)
+            flux_density_left_gm_approx, gm_left_plot_freqs, gm_left_plot_arr = ConvertingArrays.gamma_approximation(temp_left, freqs)
+            flux_density_right_gm_approx, gm_right_plot_freqs, gm_right_plot_arr = ConvertingArrays.gamma_approximation(temp_right, freqs)
         except Exception as err:
             print(f'Error approximation: {err}')
             sys.exit()
@@ -227,7 +246,7 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
     if gs_approx == True:
         LR_axs[0].plot(plot_freqs, flux_density_left_approx, linestyle = '--', zorder = 1)
     if gm_approx == True:
-        LR_axs[0].plot(plot_freqs, flux_density_left_gm_approx, linestyle = '--', zorder = 1)
+        LR_axs[0].plot(gm_left_plot_freqs/1000, gm_left_plot_arr, linestyle = '--', zorder = 1)
 
     LR_axs[0].set_title('LCP', fontweight='bold')
     LR_axs[0].set_ylabel('Flux density, $sfu$')
@@ -241,7 +260,7 @@ for directory in tqdm(directories, desc='Times analise', leave=True):
     if gs_approx == True:
         LR_axs[1].plot(plot_freqs, flux_density_right_approx, linestyle = '--', zorder = 1)
     if gm_approx == True:
-        LR_axs[1].plot(plot_freqs, flux_density_right_gm_approx, linestyle = '--', zorder = 1)
+        LR_axs[1].plot(gm_right_plot_freqs/1000, gm_right_plot_arr, linestyle = '--', zorder = 1)
 
     LR_axs[1].set_title('RCP', fontweight='bold')
     # axs[1].set_ylabel('Flux density, $sfu$')
