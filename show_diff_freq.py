@@ -19,7 +19,7 @@ logging.info(f'Start program show of the solar on difference frequency')
 # Каталог из которого будем брать файлы
 # directory = "D:/datasets/20.01.22/times/20220120T055800_calibrated_brightness_aligned"
 # directory = "D:\datasets/20.01.22/times/20220120T055630_calibrated_brightness_COM_aligned"
-directory = "F:/20240514_times/20240514T020100"
+directory = "J:/20240514_hr_times/20240514T020300"
 vcenter = 5000
 
 logging.info(f'Path to files: {directory}')

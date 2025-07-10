@@ -134,7 +134,7 @@ class FindIntensity:
 
     @staticmethod
     def find_intensity_in_four_point(matrix: np.ndarray, point: tuple) -> float:
-        """Интенсивность из четырех пикселей. Берется указанная точка + три точки с правой стороны от него
+        """Интенсивность из четырех пикселей. Берется указанная точка + три точки с правой стороны от него (сверху)
 
         Args:
             matrix (np.ndarray): массив данных изображения
@@ -532,6 +532,7 @@ class ConvertingArrays:
     @staticmethod
     def gamma_approximation(intensity: np.ndarray, freqs: np.ndarray) -> np.ndarray:
 
+        print(intensity)
         # Преобразование к лог-лог масштабу
         log_freqs = np.log10(freqs)
         log_intensity = np.log10(intensity)
@@ -549,9 +550,12 @@ class ConvertingArrays:
             delta = log_x - log_nu_peak
             return log_A - np.log10(10**(-alpha * delta) + 10**(-beta * delta)) / smooth
 
-        p0 = [np.max(log_intensity), np.log10(freqs[np.argmax(intensity)]), 2.5, -3.5, 1.0]
-        bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf, np.inf, 10])
+        # p0 = [np.max(log_intensity), np.log10(freqs[np.argmax(intensity)]), 2.5, -3.5, 15]
+        p0 = [np.max(log_intensity), 4.5, 2.5, -3.5, 5]
+        print(np.log10(freqs[np.argmax(intensity)]))
+        bounds = ([-np.inf, 4.35, -np.inf, -np.inf, 0.5], [np.inf, 5, np.inf, np.inf, 10])
         params, _ = curve_fit(log_broken_power_peak, log_freqs, log_intensity, p0=p0, bounds=bounds)
+        print(params)
         # log_A_fit, n_fit, x0_fit = params
         # log_A_fit, n_fit, x0_fit, beta, hueta = params
         approx_plot_freqs = np.logspace(np.log10(freqs[0]), np.log10(freqs[-1]), 2048)
@@ -751,13 +755,11 @@ class FileOperations:
         match = re.search(r"SRH(\d+)_CH(\d+)", name_folder)
         if match:
             srh_number = match.group(1)
-            ch_number = match.group(2).replace("0", "")
-            if ch_number == '':
-                ch_number = 0
+            ch_number = int(match.group(2))
         else:
             print('Не удалось распознать имя директории')
 
-        globa_freq = Variables.freqs_lists[srh_number][int(ch_number)]
+        globa_freq = Variables.freqs_lists[srh_number][ch_number]
 
         return globa_freq
 
