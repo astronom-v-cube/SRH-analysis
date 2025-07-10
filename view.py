@@ -28,12 +28,13 @@ vcenter = 5000
 # logging.info(f'Files: \n {files}')
 
 # Загрузка fits файла
-fits_image_file = fits.open("F:/20240514/23400/srh_20240514T020734_23400_RCP.fits")
+path = "J:/20240514_hr/23400/srh_20240514T020659_23400_LCP.fits"
+fits_image_file = fits.open(path)
 # # Получение матрицы numpy из данных fits
 fits_data = fits_image_file[0].data
-cropped_data = fits_data[645:675, 285:315]
-x_min, x_max = 645, 670  # по оси X (столбцы)
-y_min, y_max = 285, 310  # по оси Y (строки)
+cropped_data = fits_data[873:898, 385:415]
+x_min, x_max = 873, 898  # по оси X (столбцы)
+y_min, y_max = 385, 415  # по оси Y (строки)
 
 levels = np.linspace(0.1 * np.max(fits_data), 0.995 * np.max(fits_data), 7)
 
@@ -49,13 +50,14 @@ plt.imshow(
     vmax=fits_data.max(),
     # extent=[x_min, x_max, y_min, y_max]  # границы в исходных координатах
 )  # norm=TwoSlopeNorm(vmin=0, vcenter=vcenter, vmax=300000),
-rectangle1 = patches.Rectangle((656-0.5, 294-0.5), 2, 2, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+rectangle1 = patches.Rectangle((882-0.5, 393-0.5), 3, 3, linewidth=2, edgecolor='k', facecolor='none', zorder = 5)
 ax.add_patch(rectangle1)
-rectangle2 = patches.Rectangle((659-0.5, 297-0.5), 2, 2, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+rectangle2 = patches.Rectangle((884-0.5, 401-0.5), 3, 3, linewidth=2, edgecolor='k', facecolor='none', zorder = 5)
 ax.add_patch(rectangle2)
-rectangle3 = patches.Rectangle((657-0.5, 300-0.5), 2, 2, linewidth=1.5, edgecolor='k', facecolor='none', zorder = 5)
+rectangle3 = patches.Rectangle((887-0.5, 397-0.5), 3, 3, linewidth=2, edgecolor='k', facecolor='none', zorder = 5)
 ax.add_patch(rectangle3)
 plt.xlim(x_min, x_max)
 plt.ylim(y_min, y_max)
 plt.tight_layout()
-plt.show()
+plt.savefig(f'areas/{path[25:40]}.png')
+# plt.show()
