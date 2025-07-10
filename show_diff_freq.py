@@ -38,7 +38,7 @@ np.set_printoptions(threshold=np.inf)
 
 # получение границ кропа через срезы из строк и каждой строки
 # stroka_1, stroka_2, stolbec_1, stolbec_2 = 615, 640, 315, 335
-stroka_1, stroka_2, stolbec_1, stolbec_2 = 0, 1024, 0, 1024
+stroka_1, stroka_2, stolbec_1, stolbec_2 = 0, 768, 0, 768
 # stroka_1, stroka_2, stolbec_1, stolbec_2 = 543, 583, 873, 913
 
 def multiple_crope_images_display(input_matrix_list_files, NX=10, NY=9):
@@ -57,7 +57,7 @@ def multiple_crope_images_display(input_matrix_list_files, NX=10, NY=9):
         r_or_l = re.search(r'(RCP|LCP|R|L)', str(input_matrix_list_files[i]))
         # print(f'рисую в клетке {i+1}')
         # ax.imshow((fits_image_file)[stroka_1:stroka_2, stolbec_1:stolbec_2], origin='lower', cmap='plasma', interpolation='gaussian')
-        ax.imshow((fits_image_file), origin='lower', cmap='plasma', norm=TwoSlopeNorm(vmin=0, vcenter=vcenter, vmax=300000), extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]]) #[300:500, 800:1000]
+        ax.imshow((fits_image_file)[245:345, 610:705], origin='lower', cmap='plasma', norm=TwoSlopeNorm(vmin=0, vcenter=vcenter, vmax=300000), extent=[0, fits_image_file.shape[1], 0, fits_image_file.shape[0]])
 
 
         # Создание контуров только для определенной части изображения
@@ -76,7 +76,7 @@ def multiple_crope_images_display(input_matrix_list_files, NX=10, NY=9):
         #     line.set_linewidth(1.2)  # Увеличение толщины контура
         #     line.set_antialiased(True)  # Сглаживание контуров
 
-        # ax.plot(390, 431,'+', markersize=50, linewidth=2, color = 'r')
+        ax.plot(390, 431,'+', markersize=50, linewidth=2, color = 'r')
         # ax.plot(324, 628, 'x', markersize=15, color = 'k')
 
         # ax.plot(890, 563, 'x', markersize=15, color = 'k')

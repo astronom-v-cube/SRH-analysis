@@ -561,6 +561,7 @@ class ConvertingArrays:
         approx_plot_freqs = np.logspace(np.log10(freqs[0]), np.log10(freqs[-1]), 2048)
         plot_log_fit = log_broken_power_peak(np.log10(approx_plot_freqs), *params)
         log_fit = log_broken_power_peak(np.log10(freqs), *params)
+        plot_log_fit = log_broken_power_peak(np.log10(np.linspace(freqs[0], freqs[-1], 2048)), *params)
         y_fit = 10**log_fit
         plot_y_fit = 10**plot_log_fit
 
