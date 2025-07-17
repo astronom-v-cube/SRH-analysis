@@ -24,47 +24,54 @@ logging.info(f'Start of the program to search intensity spectrum of a sun')
 
 ############################################
 ##### Values #####
-sbc_raw = 'F:/cbs_data_2hours.sav'
+sbc_raw = 'J:/cbs_data_2hours.sav'
 times_list = [
     '20240514T020434',
-    '20240514T020446',
-    '20240514T020456',
-    '20240514T020501',
-    '20240514T020520',
-    '20240514T020530',
-    '20240514T020537',
-    '20240514T020544',
-    '20240514T020548',
-    '20240514T020555',
-    '20240514T020606',
-    '20240514T020613',
-    '20240514T020623',
-    '20240514T020641',
-    '20240514T020650',
-    '20240514T020657',
+    # '20240514T020446',
+    # '20240514T020456',
+    # '20240514T020501',
+    # '20240514T020520',
+    # '20240514T020530',
+    # '20240514T020537',
+    # '20240514T020544',
+    # '20240514T020548',
+    # '20240514T020555',
+    # '20240514T020606',
+    # '20240514T020613',
+    # '20240514T020623',
+    # '20240514T020641',
+    # '20240514T020650',
+    # '20240514T020657',
     ]
+
+# times_list = [
+#     '20240514T013000',
+#     '20240514T012000',
+#     ]
+
 
 directories = [None] * len(times_list)
 for index, time in enumerate(times_list):
-    directories[index] = f'F:/20240514_times/{time}'
+    directories[index] = f'J:/20240514_hr_times/{time}'
 
 polynomial_degree = 4
 # coordinates = (324, 628)
 # coordinates = (890, 563)
 # coordinates = (893, 565)
-coordinates = (657, 297)
+# coordinates = (659, 300)
+coordinates = (883, 394)
 ##### Params #####
-adding_sbc_data = True
 running_mean = False
 polinom_approx = False
 gs_approx = False  #чет не работает
 gm_approx = True
 psf_calibration = False
 background_Zirin_subtraction = False
-intensity_plot = False
+intensity_plot = True
 save_graphs = True
 use_sbc_data = True
-number_of_used_pixel = 4
+number_of_used_pixel = 9
+alternation_subscription_x = True
 #############################################
 
 if save_graphs:
@@ -83,7 +90,8 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
 
     if os.path.isdir(directory) == False:
         try:
-            find_nearest_files(directory.split('_')[0], directory.split('/')[-1], directory)
+            print('_'.join(directory.rsplit('_', 1)[:-1]))
+            find_nearest_files('_'.join(directory.rsplit('_', 1)[:-1]), directory.split('/')[-1], directory)
         except Exception as err:
             print(err)
             print('Папка не существует, создать не удалось')
@@ -197,8 +205,13 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
         except Exception as err:
             print(f'Error approximation: {err}')
             sys.exit()
-        logging.info(f'Flux in sfu for LCP with gamma approximation: [{ConvertingArrays.arr2str4print(flux_density_left_gm_approx)}]')
-        logging.info(f'Flux in sfu for RCP with gamma approximation: [{ConvertingArrays.arr2str4print(flux_density_right_gm_approx)}]')
+        logging.info(f'Flux in sfu for LCP with gamma approximation???: [{ConvertingArrays.arr2str4print(flux_density_left_gm_approx)}]')
+        logging.info(f'Flux in sfu for RCP with gamma approximation???: [{ConvertingArrays.arr2str4print(flux_density_right_gm_approx)}]')
+
+        logging.info(f'Freqs L: [{ConvertingArrays.arr2str4print(gm_left_plot_freqs)}]')
+        logging.info(f'Freqs R: [{ConvertingArrays.arr2str4print(gm_right_plot_freqs)}]')
+        logging.info(f'Fluxxxx L: [{ConvertingArrays.arr2str4print(gm_left_plot_arr)}]')
+        logging.info(f'Fluxxxx R: [{ConvertingArrays.arr2str4print(gm_right_plot_arr)}]')
 
     if psf_calibration:
         correction_psf_left = flux_density_left * psf_square
@@ -290,11 +303,14 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
         fig_I = plt.figure(num="Intensity", figsize=(12, 9))
         I_ax = plt.gca()
         I_ax.plot(plot_freqs, flux_density_left + flux_density_right, 'o', label = f"Наблюдаемый спектр", linewidth = 8, color = 'darkblue', markersize=12, markerfacecolor='none', markeredgewidth=4, zorder = 2)
-        I_ax.plot(plot_freqs, ya_left + ya_right, linestyle = '--', zorder = 1)
+        if polinom_approx:
+            I_ax.plot(plot_freqs, ya_left + ya_right, linestyle = '--', zorder = 1)
         if psf_calibration == True:
             I_ax.plot(plot_freqs, correction_psf_ya_left + correction_psf_ya_right, linestyle = '--', zorder = 1)
             I_ax.plot(plot_freqs, correction_psf_left + correction_psf_right, 'o', label = f"Наблюдаемый спектр\nс поправкой на ширину\nдиаграммы направленности", color = 'firebrick', markersize=10, zorder = 2)
-        I_ax.set_xlim(np.min(plot_freqs) - np.log10(np.min(plot_freqs) * 0.3), np.max(plot_freqs) + np.log10(np.max(plot_freqs) * 0.3))
+        if gm_approx == True:
+            I_ax.plot(gm_right_plot_freqs/1000, gm_left_plot_arr + gm_right_plot_arr, linestyle = '--', zorder = 1, label = f"Аппроксимация")
+        I_ax.set_xlim(np.min(plot_freqs) - np.log10(np.min(plot_freqs) * 0.5), np.max(plot_freqs) + np.log10(np.max(plot_freqs) * 0.5))
         I_ax.set_ylim(np.min(flux_for_graph_I) - np.min(flux_for_graph_I) * 0.2, np.max(flux_for_graph_I) + np.max(flux_for_graph_I) * 0.2)
         I_ax.set_xlabel('Frequency, $GHz$')
         I_ax.set_ylabel('Flux density, $sfu$')
@@ -307,10 +323,14 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
         I_ax.xaxis.set_minor_formatter(NullFormatter())
         I_ax.xaxis.set_minor_locator(ticker.NullLocator())
         I_ax.xaxis.set_ticks(plot_freqs)
-        I_ax.set_xticklabels(plot_freqs, rotation=60, ha='right')
+        if alternation_subscription_x:
+            labels = [str(plot_freqs[i]) if i % 2 == 0 else "" for i in range(len(plot_freqs))]
+            I_ax.set_xticklabels(labels, rotation=60, ha='right')
+        else:
+            I_ax.set_xticklabels(plot_freqs, rotation=60, ha='right')
         plt.tight_layout()
         if save_graphs:
-            plt.savefig(f'intensity_graph_{extractor.extract_datetime(directories[0])[0:7]}/I_{extractor.extract_datetime(directory)}.png', dpi = 300)
+            plt.savefig(f'intensity_graphs/I_{extractor.extract_datetime(directory)}.png', dpi = 300)
         else:
             plt.show()
         plt.close()
