@@ -75,6 +75,19 @@ save_graphs = True
 use_sbc_data = True
 number_of_used_pixel = 9
 alternation_subscription_x = True
+find_spectrum_index = False
+#################################
+cut_spectrum = True
+left_border = 11200
+right_border = 23000
+#################################
+use_custom_bounds_p0_in_gs_approx = False
+p0_LCP = [1.7777988745686195, 4.3, 9.00225337928868, -10, 4.483383696619592]
+p0_RCP = [1.8119682054875152, 4.287416408348701, 60.59381643536185, -10.872224557901992, 3]
+# bounds_gs_LCP_approx = ([1.9, 4.43, -np.inf, -np.inf, 1.5], [1.97, 4.5, np.inf, np.inf, 1.7])
+# bounds_gs_RCP_approx = ([1.85, 4.4, -100, -np.inf, 1.6], [2.07, 4.45, np.inf, np.inf, 1.7])
+bounds_gs_LCP_approx = ([-np.inf, 4.2, -np.inf, -np.inf, -np.inf], [np.inf, 4.4, np.inf, -8, np.inf])
+bounds_gs_RCP_approx = ([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf, np.inf, 5])
 #############################################
 
 if save_graphs:
