@@ -182,6 +182,11 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
         # for freq, val in zip(sbc_freqs, sbc_values):
         #     print(f"{freq:.1f} MHz: {val}")
 
+    # Обрезка спектра в указанных пределах
+    if cut_spectrum:
+        freqs, flux_density_left, flux_density_right = ConvertingArrays.filter_spectra_by_frequency(freqs, flux_density_left, flux_density_right, left_border, right_border)
+
+    # Сглаживание спектра скользящим средним окном в 3 элемента
     if running_mean:
         flux_density_left = ConvertingArrays.variable_running_mean(flux_density_left)
         flux_density_right = ConvertingArrays.variable_running_mean(flux_density_right)
@@ -210,10 +215,20 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
         logging.info(f'Flux in sfu for LCP with gamma approximation???: [{ConvertingArrays.arr2str4print(flux_density_left_gm_approx)}]')
         logging.info(f'Flux in sfu for RCP with gamma approximation???: [{ConvertingArrays.arr2str4print(flux_density_right_gm_approx)}]')
 
-        logging.info(f'Freqs L: [{ConvertingArrays.arr2str4print(gm_left_plot_freqs)}]')
-        logging.info(f'Freqs R: [{ConvertingArrays.arr2str4print(gm_right_plot_freqs)}]')
-        logging.info(f'Fluxxxx L: [{ConvertingArrays.arr2str4print(gm_left_plot_arr)}]')
-        logging.info(f'Fluxxxx R: [{ConvertingArrays.arr2str4print(gm_right_plot_arr)}]')
+        if print_gs_approx_on_big_freqs_list:
+            try:
+                logging.info('---'*10)
+                logging.info(f'Big freqs list: [{ConvertingArrays.arr2str4print(gs_left_plot_freqs)}]')
+                logging.info(f'Flux in sfu for LCP with gyrosynchrotron approximation on big freqs list: [{ConvertingArrays.arr2str4print(gs_left_plot_arr)}]')
+                logging.info(f'Flux in sfu for RCP with gyrosynchrotron approximation on big freqs list: [{ConvertingArrays.arr2str4print(gs_right_plot_arr)}]')
+                logging.info('---'*30)
+            except RuntimeError:
+                Monitoring.logprint('Apparently, the print_gs_approx_on_big_freqs_list parameter is active, but the gyrosynchrotron_approx parameter is not enabled, fix it')
+                sys.exit()
+
+    if find_spectrum_index:
+        LCP_spectrum_index_data = ConvertingArrays.calculate_spectrum_index(gs_left_plot_freqs, gs_left_plot_arr)
+        RCP_spectrum_index_data = ConvertingArrays.calculate_spectrum_index(gs_left_plot_freqs, gs_right_plot_arr)
 
     if psf_calibration:
         correction_psf_left = flux_density_left * psf_square
