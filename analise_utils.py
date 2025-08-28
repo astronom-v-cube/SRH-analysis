@@ -585,6 +585,9 @@ class ConvertingArrays:
         """
         zirin = ZirinTb()
         for index, freq in enumerate(arr_freqs):
+            if 2 > freq or freq > 99:
+                Monitoring.logprint('Freqs is not GHz! Fix it')
+                sys.exit()
             arr_left_flux[index]  = (arr_left_flux[index]  - zirin.getTbAtFrequency(freq/1000))
             arr_right_flux[index] = (arr_right_flux[index] - zirin.getTbAtFrequency(freq/1000))
         logging.info(f'Flux in sfu for LCP minus solar disk flux: [{ConvertingArrays.arr2str4print(arr_left_flux)}]')
