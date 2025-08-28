@@ -85,8 +85,7 @@ if psf_calibration:
     psf_npz_file = np.load('psf_square.npz')
     freqs_npz = sorted(psf_npz_file['freqs'])
     psf_square = psf_npz_file['psf_square']
-# psf_square = np.array([11.1460177 ,  9.72418879,  8.5339233 ,  7.57227139,  6.74631268, 6.04867257,  5.46902655,  4.96902655,  4.49115044,  4.12831858, 3.5280236 ,  3.23156342,  3.11651917,  2.99852507,  2.78466077, 2.76548673,  2.59734513,  2.47640118,  2.22713864,  2.01917404, 1.83185841,  1.70943953,  1.55899705,  1.42625369,  1.32300885, 1.21976401,  1.13126844,  1.0560472, 1]) # 16.07.23
-psf_square = np.array([1.75, 1.7, 1.65, 1.6, 1.55, 1.5, 1.45, 1.4, 1.35, 1.3, 1.2, 1.15, 1.1, 1.05, 1])  # 20.01.22 (9800 = 1.25, 10200 = 1.2)
+
 
 for directory in tqdm(directories, desc='Times analise', position=0, leave=True):
     print(directory.split('/')[-1])
