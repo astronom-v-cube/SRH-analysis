@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+import platform
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +25,9 @@ logging.info(f'Start of the program to search intensity spectrum of a sun')
 
 ############################################
 ##### Values #####
-sbc_raw = 'J:/cbs_data_2hours.sav'
+beginning_of_path = '/mnt/astro_data' if platform.system() == 'Linux' else 'F:'
+sbc_raw = f'{beginning_of_path}/cbs_data_2hours.sav'
+
 times_list = [
     '20240514T020434',
     # '20240514T020446',
