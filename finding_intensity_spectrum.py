@@ -261,6 +261,12 @@ for directory in tqdm(directories, desc='Times analise', position=0, leave=True)
         logging.info(f'Finish flux in s.f.u for LCP - polifit: [{ConvertingArrays.arr2str4print(ya_left)}]')
         logging.info(f'Finish flux in s.f.u for RCP - polifit: [{ConvertingArrays.arr2str4print(ya_right)}]')
 
+    if resample_spectrum:
+        resample_freqs, resample_LCP_data, resample_RCP_data = ConvertingArrays.adaptive_resample(gs_left_plot_freqs, gs_left_plot_arr, gs_right_plot_arr, n_points=num_of_resample_points, round_to=1000)
+        logging.info(f'Resample freqs: [{ConvertingArrays.arr2str4print(resample_freqs)}]')
+        logging.info(f'Resample flux in s.f.u for LCP: [{ConvertingArrays.arr2str4print(resample_LCP_data)}]')
+        logging.info(f'Resample flux in s.f.u for RCP: [{ConvertingArrays.arr2str4print(resample_RCP_data)}]')
+
     ######## График поляризаций #######
     fig_LR, LR_axs = plt.subplots(1, 2, num="L and R polarization", figsize=(27, 15), sharex=True, sharey=True)
     # fig.suptitle(f'{directory[9:24]}')
